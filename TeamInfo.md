@@ -4,16 +4,16 @@
 
 |   Info      |        Description     |
 | ----------- | ---------------------- |
-| TeamID      |        Team-000        |
-| TeamName    |         sample         |
-| Captain     |       Abdu Alawini     |
-| Captain     |  alawini@illinois.edu  |
-| Member1     |        Kevin Pei       |
-| Member1     |   kevin2@illinois.edu  |
-| Member2     |     Ti-Chung Cheng     |
-| Member2     |  tichung3@illinois.edu |
-| Member3     |                        |
-| Member3     |                        |
+| TeamID      |        Team-059        |
+| TeamName    |       MongoKings       |
+| Captain     |    Aryan CHADHA        |
+| Captain     |  aryanc6@illinois.edu  |
+| Member1     |        Dhruv Malpani   |
+| Member1     |   dhruvm6@illinois.edu |
+| Member2     |      Weijian Zhou      |
+| Member2     |  weijian4@illinois.edu |
+| Member3     |        Jun Lim         |
+| Member3     |  junlim3@illinois.edu  |
 
 ## Project Information
 
