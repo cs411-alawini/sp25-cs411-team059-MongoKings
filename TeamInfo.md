@@ -6,7 +6,7 @@
 | ----------- | ---------------------- |
 | TeamID      |        Team-059        |
 | TeamName    |       MongoKings       |
-| Captain     |    Aryan CHADHA        |
+| Captain     |    Aryan Chadha        |
 | Captain     |  aryanc6@illinois.edu  |
 | Member1     |        Dhruv Malpani   |
 | Member1     |   dhruvm6@illinois.edu |
