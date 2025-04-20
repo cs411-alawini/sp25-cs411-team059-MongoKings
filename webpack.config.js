@@ -24,6 +24,11 @@ module.exports = {
           'postcss-loader'
         ],
       },
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
     ],
   },
   resolve: {
