@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { logout } from "../../services/Auth/AuthSlice";
-
+import './styles.css';
 const Dashboard = () => {
   const [activeTime, setActiveTime] = useState('all');
   const [searchInput, setSearchInput] = useState('');
