@@ -5,6 +5,7 @@ from flask_cors import CORS
 from google.cloud.sql.connector import Connector
 from controllers.booking_controller import booking_blueprint
 from controllers.auth_controller import auth_blueprint
+from controllers.car_controller import car_blueprint
 
 USER = "root"
 PASSWORD = os.environ.get("DB_PASSWORD")
@@ -37,5 +38,6 @@ def create_app():
     app.config["FLASK_DEBUG"] = os.environ.get("FLASK_DEBUG")
     app.register_blueprint(booking_blueprint)
     app.register_blueprint(auth_blueprint)
+    app.register_blueprint(car_blueprint)
     db.init_app(app)
     return app

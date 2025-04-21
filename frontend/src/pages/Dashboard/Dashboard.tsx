@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { logout } from "../../services/Auth/AuthSlice";
 import './styles.css';
+import CarCard from "./CarCard";
+import { selectCarList } from "../../services/Car/CarSelectors";
+
 const Dashboard = () => {
   const [activeTime, setActiveTime] = useState('all');
   const [searchInput, setSearchInput] = useState('');
@@ -10,9 +13,10 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('all-cars');
   const [isFilterPageOpen, setIsFilterPageOpen] = useState(false);
   const [showLoginPage, setShowLoginPage] = useState(false);
-  
-  // Get user auth state from Redux store
+
   const { user, isLoading, error } = useAppSelector((state) => state.auth);
+  const cars = useAppSelector(selectCarList);
+  console.log('Cars:', cars);
   const dispatch = useAppDispatch();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,13 +57,6 @@ const Dashboard = () => {
     { name: 'Compact cars', icon: '🚗' },
     { name: 'Luxury cars', icon: '🏎️' },
     { name: 'Economy', icon: '💰' },
-  ];
-
-  const popularCars = [
-    { name: 'Electric Dream (ED)', location: 'Speedster Resorts', date: '17/09/2023, 8 AM', image: '/api/placeholder/250/150', action: 'Rent now' },
-    { name: 'Turbo Thrust (CER)', location: 'Fuel Fast', date: '21/09/2023', image: '/api/placeholder/250/150', action: 'Rent now' },
-    { name: 'Green Machine (FR)', location: 'City Carbon', date: '11/09/2023', image: '/api/placeholder/250/150', action: 'Rent now' },
-    { name: 'Urban Glide (JPN)', location: 'Lorem Ipsum', date: '', image: '/api/placeholder/250/150', action: 'Rent now' }
   ];
 
   const carListings = [
@@ -103,13 +100,13 @@ const Dashboard = () => {
     <div className="results-container">
       {/* Tabs */}
       <div className="tabs-container">
-        <button 
+        <button
           className={`tab ${activeTab === 'your-bookings' ? 'active-tab' : ''}`}
           onClick={() => setActiveTab('your-bookings')}
         >
           Your Bookings
         </button>
-        <button 
+        <button
           className={`tab ${activeTab === 'all-cars' ? 'active-tab' : ''}`}
           onClick={() => setActiveTab('all-cars')}
         >
@@ -125,14 +122,14 @@ const Dashboard = () => {
             <div className="car-image">
               <img src={car.image} alt={car.name} />
             </div>
-            
+
             {/* Car Details */}
             <div className="car-details">
               <h3>{car.name}</h3>
               <p>{car.city} - {car.date}</p>
               <p className="car-rate">Rate: {car.rate}</p>
               <p>Location: {car.location}</p>
-              
+
               {/* Right Arrow */}
               <div className="car-arrow">▶</div>
             </div>
@@ -149,66 +146,6 @@ const Dashboard = () => {
 
   return (
     <div className="app-container">
-      {/* Header */}
-      <header className="header">
-        <div className="logo">
-          <div className="logo-icon"></div>
-          <span>CarFlex</span>
-        </div>
-        
-        {showResults ? (
-          <div className="search-container">
-            <div className="search-box">
-              <input
-                type="text"
-                placeholder="Search for rental car"
-                value={searchInput}
-                onChange={handleSearchChange}
-              />
-              <button 
-                className="search-button"
-                onClick={handleSearchClick}
-              >
-                Search
-              </button>
-            </div>
-            <button className="nav-link">Available Cars</button>
-            <button 
-              className="nav-link"
-              onClick={() => setIsFilterPageOpen(true)}
-            >
-              Filters
-            </button>
-            <button 
-              className="filter-button"
-              onClick={() => setIsFilterPageOpen(true)}
-            >
-              Filter
-            </button>
-          </div>
-        ) : (
-          <div className="nav-links">
-            <form onSubmit={handleSearchSubmit}>
-              <button className="nav-link">Search for rental</button>
-            </form>
-            <button 
-              className="nav-link"
-              onClick={() => setIsFilterPageOpen(true)}
-            >
-              Filter
-            </button>
-            {user ? (
-              <div className="user-controls">
-                <span className="welcome-message">Welcome, {user.name}</span>
-                <button className="logout-button" onClick={handleLogout}>Log out</button>
-              </div>
-            ) : (
-              <button className="login-button" onClick={handleLoginButtonClick}>Log in</button>
-            )}
-          </div>
-        )}
-      </header>
-
       {/* Main Content */}
       {showResults ? (
         renderResultsPage()
@@ -223,9 +160,9 @@ const Dashboard = () => {
               <h1>Discover the perfect ride for your journey.</h1>
               <div className="search-form-container">
                 <form onSubmit={handleSearchSubmit}>
-                  <input 
-                    type="text" 
-                    placeholder="Enter location or car model" 
+                  <input
+                    type="text"
+                    placeholder="Enter location or car model"
                     value={searchInput}
                     onChange={handleSearchChange}
                   />
@@ -252,31 +189,31 @@ const Dashboard = () => {
           <section className="popular-section">
             <h2>Popular in New York</h2>
             <div className="time-filters">
-              <button 
+              <button
                 className={`time-filter ${activeTime === 'all' ? 'active-filter' : ''}`}
                 onClick={() => setActiveTime('all')}
               >
                 All
               </button>
-              <button 
+              <button
                 className={`time-filter ${activeTime === 'today' ? 'active-filter' : ''}`}
                 onClick={() => setActiveTime('today')}
               >
                 Today
               </button>
-              <button 
+              <button
                 className={`time-filter ${activeTime === 'tomorrow' ? 'active-filter' : ''}`}
                 onClick={() => setActiveTime('tomorrow')}
               >
                 Tomorrow
               </button>
-              <button 
+              <button
                 className={`time-filter ${activeTime === 'this-week' ? 'active-filter' : ''}`}
                 onClick={() => setActiveTime('this-week')}
               >
                 This week
               </button>
-              <button 
+              <button
                 className={`time-filter ${activeTime === 'next-week' ? 'active-filter' : ''}`}
                 onClick={() => setActiveTime('next-week')}
               >
@@ -284,18 +221,8 @@ const Dashboard = () => {
               </button>
             </div>
             <div className="cars-grid">
-              {popularCars.map((car, index) => (
-                <div key={index} className="car-card">
-                  <div className="car-card-image">
-                    <img src={car.image} alt={car.name} />
-                    <button className="view-button">View</button>
-                  </div>
-                  <div className="car-card-details">
-                    <h3>{car.name}</h3>
-                    <p>{car.location} {car.date ? `- ${car.date}` : ''}</p>
-                    <button className="rent-button">{car.action}</button>
-                  </div>
-                </div>
+              {cars.filter((car) => (car.State === user?.state)).slice(0, 10).map((car) => (
+                <CarCard key={car.Car_Id} {...car} />
               ))}
             </div>
           </section>
@@ -396,7 +323,7 @@ const Dashboard = () => {
           </div>
           <div className="filter-footer">
             <button className="clear-button">Clear All</button>
-            <button 
+            <button
               className="apply-button"
               onClick={() => {
                 handleApplyFilters({});

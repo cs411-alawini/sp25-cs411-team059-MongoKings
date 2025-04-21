@@ -4,9 +4,11 @@ import { selectAuthUser } from "./services/Auth/AuthSelectors";
 import Login from "./pages/Login/Login";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import MainNavbar from "./pages/components/MainNavbar";
+import RentNowForm from "./pages/Dashboard/RentNowForm";
 
 const login = "/login";
 const dashboard = "/dashboard";
+const dashboardCar = "/dashboard/car";
 const all = "*";
 
 const links = [
@@ -37,7 +39,8 @@ function AppRouter() {
             )
           }
         >
-          <Route path={dashboard} element={<Dashboard />} />
+          <Route path={`car/:carId`} element={<RentNowForm />} />
+          <Route index element={<Dashboard />} />
         </Route>
         <Route path={all} element={<Navigate to={login} />} />
       </Routes>
@@ -45,4 +48,10 @@ function AppRouter() {
   );
 }
 
+export {
+  login,
+  dashboard,
+  dashboardCar,
+  all,
+}
 export default AppRouter;

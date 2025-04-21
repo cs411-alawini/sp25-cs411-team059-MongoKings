@@ -1,9 +1,11 @@
 import { Action, configureStore, ThunkAction } from "@reduxjs/toolkit";
 import authReducer from "../services/Auth/AuthSlice";
+import carReducer from "../services/Car/CarSlice";
 
 const store = configureStore({
   reducer: {
     auth: authReducer,
+    car: carReducer,
   },
 });
 

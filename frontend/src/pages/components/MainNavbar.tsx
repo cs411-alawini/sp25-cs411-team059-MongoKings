@@ -2,8 +2,9 @@ import { Button, Container, Nav, Navbar, NavbarBrand } from "react-bootstrap";
 import { useAppDispatch } from "../../app/hooks";
 import User from "../../types/Authentication/User";
 import { logout } from "../../services/Auth/AuthSlice";
-import React from "react";
+import React, { useEffect } from "react";
 import { Outlet } from "react-router";
+import { getCars } from "../../services/Car/CarSlice";
 
 interface MainNavbarProps {
   user: User | null;
@@ -16,6 +17,10 @@ function MainNavbar({ user, links }: MainNavbarProps): JSX.Element {
     event.preventDefault();
     dispatch(logout());
   };
+
+  useEffect(() => {
+    dispatch(getCars());
+  }, [dispatch]);
 
   return (
     <div>
