@@ -3,8 +3,6 @@ from extensions import db
 import random
 
 booking_blueprint = Blueprint("booking", __name__)
-
-# Endpoint to get booking summary and payment details
 @booking_blueprint.route("/booking/summary", methods=["POST"])
 def booking_summary():
     data = request.get_json()
@@ -13,9 +11,25 @@ def booking_summary():
 
     customer_id = data.get("customer_id")
     car_id = data.get("car_id")
+    start_date = data.get("start_date")
+    end_date = data.get("end_date")
+    confirm = data.get("confirm", False)  # If confirm booking is true
 
-    if not customer_id or not car_id:
-        return {"message": "Missing customer_id or car_id"}, 400
+    if not customer_id or not car_id or not start_date or not end_date:
+@booking_blueprint.route("/booking/summary", methods=["POST"])
+def booking_summary():
+    data = request.get_json()
+    if not data:
+        return {"message": "Invalid input"}, 400
+
+    customer_id = data.get("customer_id")
+    car_id = data.get("car_id")
+    start_date = data.get("start_date")
+    end_date = data.get("end_date")
+    confirm = data.get("confirm", False)  # If confirm booking is true
+
+    if not customer_id or not car_id or not start_date or not end_date:
+        return {"message": "Missing required fields (customer_id, car_id, start_date, end_date)"}, 400
 
     connection = db.engine.raw_connection()  # Low-level DB connection
     cursor = connection.cursor()
@@ -88,23 +102,44 @@ def booking_summary():
 
         discount_result = cursor.fetchone()
 
-        # Commit transaction
-        connection.commit()
+        # Calculate booking duration
+        cursor.execute("SELECT DATEDIFF(day, %s, %s)", (start_date, end_date))
+        duration_result = cursor.fetchone()
+        if not duration_result or duration_result[0] <= 0:
+            connection.rollback()
+            return {"message": "Invalid booking date range"}, 400
+        duration = duration_result[0]
 
-        # Return response with the result
-        return jsonify({
-            "booking_id": total_result[0],
-            "customer_id": total_result[2],
-            "customer_name": total_result[1],
-            "state": total_result[3],
-            "rental_cost": float(total_result[4]),
-            "insurance_val": float(total_result[6]),
-            "total_payment": float(total_result[5]),
-            "discount_price": float(discount_result[0]) if discount_result else None
-        }), 200
+        cursor.execute("""
+            SELECT 1 FROM Booking_Reservations
+            WHERE Car_Id = %s AND NOT (
+                Booking_End_Date < %s OR Booking_Start_Date > %s
+            )
+        """, (car_id, start_date, end_date))
+        if cursor.fetchone():
+            connection.rollback()
+            return {"message": "Car is not available for the selected dates"}, 409
+
+        if confirm:
+            cursor.execute("""
+                INSERT INTO Booking_Reservations 
+                    (Customer_Id, Car_Id, Booking_Start_Date, Booking_End_Date, Booking_Duration)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (customer_id, car_id, start_date, end_date, duration))
+
+            connection.commit()
+
+            return jsonify({
+                "message": "Booking confirmed!",
+                "booking_id": total_result[0],
+                "customer_id": total_result[2],
+                "customer_name": total_result[1],
+                "total_payment": float(total_result[5]),
+                "discount_price": float(discount_result[0]) if discount_result else None
+            }), 200
 
     except Exception as e:
-        connection.rollback()  # Rollback in case of error
+        connection.rollback() 
         return {"message": f"Transaction failed: {str(e)}"}, 500
     finally:
         cursor.close()
