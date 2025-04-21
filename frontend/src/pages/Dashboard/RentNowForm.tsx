@@ -1,29 +1,9 @@
-// import { useNavigate, useParams } from "react-router";
-// import { dashboard } from "../../routes";
-
-// function RentNowForm() {
-//     console.log("RentNowForm component rendered");
-//     const navigate = useNavigate();
-//     const { carId } = useParams<{ carId: string }>();
-//     console.log("Car ID from params:", carId);
-//     if (!carId) {
-//         navigate(dashboard);
-//         return null;
-//     }
-//     const carIdNumber = parseInt(carId, 10);
-//     return <div className="app-container">
-//         <h1>Rent Now Form for Car ID: {carIdNumber}</h1>
-//         {/* Here you can add the form fields and logic to handle the rental process */}
-//         <p>This is where the form for renting the car will be implemented.</p>
-//         <button onClick={() => navigate(dashboard)}>Back to Dashboard</button>
-//     </div>
-// }
-
-// export default RentNowForm;
-
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { dashboard } from "../../routes";
+import apiEndpoints from "../../data/environment";
+import { useAppSelector } from "../../app/hooks";
+import { selectAuthUser } from "../../services/Auth/AuthSelectors";
 
 function RentNowForm() {
     const navigate = useNavigate();
@@ -31,37 +11,49 @@ function RentNowForm() {
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [summary, setSummary] = useState<any>(null);
-    const [customerId, setCustomerId] = useState(""); 
+    const user = useAppSelector(selectAuthUser);
+
     if (!carId) {
         navigate(dashboard);
         return null;
     }
 
     const handleCheckAvailability = async () => {
-        const response = await fetch("/booking/summary", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                customer_id: customerId,
-                car_id: parseInt(carId),
-                start_date: startDate,
-                end_date: endDate
-            })
-        });
-        const result = await response.json();
-        if (response.ok) {
-            setSummary(result);
-        } else {
-            alert(result.message || "Booking check failed.");
+        try {
+            if (user === null) {
+                alert("Please log in to check availability.");
+                return;
+            }
+            const response = await fetch(apiEndpoints.bookingSummary, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    car_id: parseInt(carId),
+                    start_date: startDate,
+                    end_date: endDate,
+                    customer_id: user.customer_id
+                })
+            });
+    
+            const result = await response.json();
+    
+            if (response.ok) {
+                setSummary(result);
+            } else {
+                console.error("Booking summary error:", result);
+                alert(result.message || "Booking check failed.");
+            }
+        } catch (err) {
+            console.error("Fetch error:", err);
+            alert("An unexpected error occurred. Check console for details.");
         }
     };
 
     const handleConfirmBooking = async () => {
-        const response = await fetch("/booking/confirm", {
+        const response = await fetch(apiEndpoints.bookingConfirm, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                customer_id: customerId,
                 car_id: parseInt(carId),
                 start_date: startDate,
                 end_date: endDate
@@ -80,11 +72,6 @@ function RentNowForm() {
     return (
         <div className="app-container">
             <h1>Rent Now - Car ID: {carId}</h1>
-
-            <label>
-                Customer ID:
-                <input value={customerId} onChange={(e) => setCustomerId(e.target.value)} />
-            </label>
 
             <label>
                 Start Date:
@@ -114,5 +101,4 @@ function RentNowForm() {
     );
 }
 
-// We need to run the followung command and ensure how does it work 
 export default RentNowForm;
