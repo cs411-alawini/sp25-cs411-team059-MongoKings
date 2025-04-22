@@ -24,26 +24,28 @@ function AppRouter() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route
-          path={login}
-          element={!loggedIn ? <Login /> : <Navigate to={dashboard} />}
-        />
-        <Route
-          path={dashboard}
-          element={
-            loggedIn ? (
-              <MainNavbar user={user} links={links} />
-            ) : (
-              <Navigate to={login} />
-            )
-          }
-        >
-          <Route path={`car/:carId`} element={<RentNowForm />} />
-          <Route index element={<Dashboard />} />
-        </Route>
-        <Route path={all} element={<Navigate to={login} />} />
-      </Routes>
+    <Routes>
+  <Route
+    path={login}
+    element={!loggedIn ? <Login /> : <Navigate to={dashboard} />}
+  />
+  <Route
+    path={dashboard}
+    element={
+      loggedIn ? (
+        <MainNavbar user={user} links={links} />
+      ) : (
+        <Navigate to={login} />
+      )
+    }
+  >
+    <Route path={`car/:carId`} element={<RentNowForm />} />
+    <Route path={`car/:carId/edit/:bookingId`} element={<RentNowForm />} />
+    <Route index element={<Dashboard />} />
+  </Route>
+  <Route path={all} element={<Navigate to={login} />} />
+</Routes>
+
     </BrowserRouter>
   );
 }

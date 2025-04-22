@@ -15,7 +15,7 @@ INSTANCE_NAME = "mongokings:us-central1:mongokings"
 
 def create_app():
     app = Flask(__name__)
-    cors_result = CORS(app)
+    cors_result = CORS(app, resources={r"/*": {"origins": "*"}})
     app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://"
     connector = Connector()
 

@@ -4,7 +4,7 @@ import { logout } from "../../services/Auth/AuthSlice";
 import './styles.css';
 import CarCard from "./CarCard";
 import { selectCarList } from "../../services/Car/CarSelectors";
-
+import { useNavigate } from "react-router-dom";
 const Dashboard = () => {
   const [activeTime, setActiveTime] = useState('all');
   const [searchInput, setSearchInput] = useState('');
@@ -18,6 +18,34 @@ const Dashboard = () => {
   const cars = useAppSelector(selectCarList);
   console.log('Cars:', cars);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate(); 
+  // Previous bookings data
+  const [bookings, setBookings] = useState([
+    {
+      id: 1,
+      carId: "CAR123",
+      startDate: "2025-03-10",
+      endDate: "2025-03-15",
+      totalAmount: "$250",
+      image: "/api/placeholder/300/180"
+    },
+    {
+      id: 2,
+      carId: "CAR456",
+      startDate: "2025-04-05",
+      endDate: "2025-04-08",
+      totalAmount: "$180",
+      image: "/api/placeholder/300/180"
+    },
+    {
+      id: 3,
+      carId: "CAR789",
+      startDate: "2025-02-20",
+      endDate: "2025-02-28",
+      totalAmount: "$320",
+      image: "/api/placeholder/300/180"
+    }
+  ]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(e.target.value);
@@ -44,6 +72,14 @@ const Dashboard = () => {
   const handleLoginButtonClick = () => {
     setShowLoginPage(true);
   };
+  // const handleDeleteBooking = (id) => {
+  //   setBookings(bookings.filter(booking => booking.id !== id));
+  // };
+
+  // const handleEditBooking = (id) => {
+  //   // Edit booking logic here
+  //   console.log(`Editing booking ${id}`);
+  // };
 
   // When user state changes and we have a user, return to homepage
   useEffect(() => {
@@ -52,12 +88,6 @@ const Dashboard = () => {
     }
   }, [user]);
 
-  const vehicleCategories = [
-    { name: 'SUVs', icon: '🚙' },
-    { name: 'Compact cars', icon: '🚗' },
-    { name: 'Luxury cars', icon: '🏎️' },
-    { name: 'Economy', icon: '💰' },
-  ];
 
   const carListings = [
     {
@@ -139,10 +169,13 @@ const Dashboard = () => {
     </div>
   );
 
-  // // Render the Login page if showLoginPage is true
-  // if (showLoginPage) {
-  //   return <Login />;
-  // }
+  const handleEditBooking = (bookingId: number, carId: string) => {
+    navigate(`/dashboard/car/${carId}/edit/${bookingId}`);
+  };
+
+  function handleDeleteBooking(id: number): void {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <div className="app-container">
@@ -173,17 +206,7 @@ const Dashboard = () => {
             </div>
           </section>
 
-          {/* Vehicle Categories */}
-          <section className="categories-section">
-            <div className="categories-grid">
-              {vehicleCategories.map((category, index) => (
-                <button key={index} className="category-button">
-                  <span className="category-icon">{category.icon}</span>
-                  <span>{category.name}</span>
-                </button>
-              ))}
-            </div>
-          </section>
+          
 
           {/* Popular in New York */}
           <section className="popular-section">
@@ -226,134 +249,62 @@ const Dashboard = () => {
               ))}
             </div>
           </section>
-        </main>
-      )}
 
-      {/* Search Modal */}
-      {isSearchModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <button className="close-button" onClick={() => setIsSearchModalOpen(false)}>×</button>
-            <h2>Search</h2>
-            <div className="search-filters">
-              {/* Simple search filters would go here */}
-              <div className="filter-group">
-                <label>Location</label>
-                <input type="text" placeholder="Enter location" />
-              </div>
-              <div className="filter-group">
-                <label>Car Type</label>
-                <select>
-                  <option>All Types</option>
-                  <option>SUV</option>
-                  <option>Sedan</option>
-                  <option>Compact</option>
-                  <option>Luxury</option>
-                </select>
-              </div>
-              <div className="filter-group">
-                <label>Price Range</label>
-                <div className="price-inputs">
-                  <input type="number" placeholder="Min" />
-                  <input type="number" placeholder="Max" />
-                </div>
-              </div>
+          {/* Previous Bookings Section */}
+          <section className="previous-bookings-section">
+            <div className="bookings-header">
+              <h2>Previous Bookings</h2>
             </div>
-            <div className="modal-buttons">
-              <button className="clear-button">Clear</button>
-              <button className="apply-button" onClick={() => {
-                handleApplyFilters({});
-                setIsSearchModalOpen(false);
-              }}>Apply</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Filter Page */}
-      {isFilterPageOpen && (
-        <div className="filter-page">
-          <div className="filter-header">
-            <h2>Filters</h2>
-            <button className="close-button" onClick={() => setIsFilterPageOpen(false)}>×</button>
-          </div>
-          <div className="filter-content">
-            <div className="filter-section">
-              <h3>Car Type</h3>
-              <div className="checkbox-group">
-                {vehicleCategories.map((category, index) => (
-                  <label key={index} className="checkbox-label">
-                    <input type="checkbox" />
-                    {category.name}
-                  </label>
+            {bookings.length === 0 ? (
+              <div className="no-bookings-message">
+                <p>No previous bookings found</p>
+              </div>
+            ) : (
+              <div className="bookings-grid">
+                {bookings.map(booking => (
+                  <div key={booking.id} className="booking-card">
+                    <img 
+                      src={booking.image} 
+                      alt={`Car ${booking.carId}`} 
+                      className="booking-image"
+                    />
+                    <div className="booking-info">
+                      <h3 className="booking-car-id">{booking.carId}</h3>
+                      <div className="booking-dates">
+                        <div className="booking-date-item">
+                          <span className="date-label">Start Date</span>
+                          <span className="date-value">{booking.startDate}</span>
+                        </div>
+                        <div className="booking-date-item">
+                          <span className="date-label">End Date</span>
+                          <span className="date-value">{booking.endDate}</span>
+                        </div>
+                      </div>
+                      <div className="booking-amount">
+                        <span className="amount-label">Total Amount</span>
+                        <span className="amount-value">{booking.totalAmount}</span>
+                      </div>
+                    </div>
+                    <div className="booking-actions">
+                      <button 
+                        onClick={() => handleEditBooking(booking.id, booking.carId)}
+                        className="edit-button"
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteBooking(booking.id)}
+                        className="delete-button"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
                 ))}
               </div>
-            </div>
-            <div className="filter-section">
-              <h3>Price Range</h3>
-              <div className="range-slider">
-                <input type="range" min="0" max="500" />
-                <div className="price-labels">
-                  <span>$0</span>
-                  <span>$500</span>
-                </div>
-              </div>
-            </div>
-            <div className="filter-section">
-              <h3>Features</h3>
-              <div className="checkbox-group">
-                <label className="checkbox-label">
-                  <input type="checkbox" />
-                  Air Conditioning
-                </label>
-                <label className="checkbox-label">
-                  <input type="checkbox" />
-                  GPS
-                </label>
-                <label className="checkbox-label">
-                  <input type="checkbox" />
-                  Bluetooth
-                </label>
-                <label className="checkbox-label">
-                  <input type="checkbox" />
-                  Child Seat
-                </label>
-              </div>
-            </div>
-          </div>
-          <div className="filter-footer">
-            <button className="clear-button">Clear All</button>
-            <button
-              className="apply-button"
-              onClick={() => {
-                handleApplyFilters({});
-                setIsFilterPageOpen(false);
-              }}
-            >
-              Apply Filters
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Simple Footer */}
-      {!showResults && (
-        <footer className="footer">
-          <div className="footer-content">
-            <div className="footer-section">
-              <h3>CarFlex Rentals</h3>
-              <p>© 2022 CarFlex. All rights reserved.</p>
-            </div>
-            <div className="footer-links">
-              <a href="#">About Us</a>
-              <a href="#">Contact</a>
-              <a href="#">Support</a>
-              <a href="#">FAQ</a>
-              <a href="#">Terms</a>
-              <a href="#">Privacy</a>
-            </div>
-          </div>
-        </footer>
+            )}
+          </section>
+        </main>
       )}
     </div>
   );
