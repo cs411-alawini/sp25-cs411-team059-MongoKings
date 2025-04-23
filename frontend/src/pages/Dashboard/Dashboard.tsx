@@ -13,40 +13,13 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('all-cars');
   const [isFilterPageOpen, setIsFilterPageOpen] = useState(false);
   const [showLoginPage, setShowLoginPage] = useState(false);
+  const [bookings, setBookings] = useState<any[]>([]);
 
   const { user, isLoading, error } = useAppSelector((state) => state.auth);
   const cars = useAppSelector(selectCarList);
   console.log('Cars:', cars);
   const dispatch = useAppDispatch();
   const navigate = useNavigate(); 
-  // Previous bookings data
-  const [bookings, setBookings] = useState([
-    {
-      id: 1,
-      carId: "CAR123",
-      startDate: "2025-03-10",
-      endDate: "2025-03-15",
-      totalAmount: "$250",
-      image: "/api/placeholder/300/180"
-    },
-    {
-      id: 2,
-      carId: "CAR456",
-      startDate: "2025-04-05",
-      endDate: "2025-04-08",
-      totalAmount: "$180",
-      image: "/api/placeholder/300/180"
-    },
-    {
-      id: 3,
-      carId: "CAR789",
-      startDate: "2025-02-20",
-      endDate: "2025-02-28",
-      totalAmount: "$320",
-      image: "/api/placeholder/300/180"
-    }
-  ]);
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(e.target.value);
   };

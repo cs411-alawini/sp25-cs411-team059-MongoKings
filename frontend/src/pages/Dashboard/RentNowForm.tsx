@@ -13,7 +13,6 @@ function RentNowForm() {
     const [summary, setSummary] = useState<any>(null);
     const user = useAppSelector(selectAuthUser);
 
-    // Redirect to dashboard if no carId or user is logged out
     useEffect(() => {
         if (!carId) {
             navigate(dashboard);
