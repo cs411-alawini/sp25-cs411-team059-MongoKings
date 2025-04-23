@@ -6,7 +6,8 @@ booking_history_blueprint = Blueprint("booking_history", __name__)
 @booking_history_blueprint.route("/booking/history", methods=["GET"])
 def get_user_bookings():
     # Get customer_id from request parameters
-    customer_id = request.args.get("customer_id")
+    # customer_id = request.args.get("customer_id")
+    customer_id = 196856
     
     if not customer_id:
         return {"message": "Missing required parameter: customer_id"}, 400
@@ -20,16 +21,15 @@ def get_user_bookings():
                 Booking_Id,
                 Booking_Duration,
                 Car_Id,
-                Booking_Start_Date as Start_date,
-                Booking_End_Date as End_date,
+                start_date as Start_date,
+                end_date as End_date,
                 Payment
             FROM 
                 Booking_Reservations
             WHERE 
-                Customer_Id = %s
+                Customer_Id = 196856
             ORDER BY 
-                Booking_Start_Date DESC
-            LIMIT 3
+                start_date DESC
         """, (customer_id,))
         bookings = cursor.fetchall()
         

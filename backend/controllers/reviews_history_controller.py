@@ -19,18 +19,18 @@ def get_user_reviews():
         cursor.execute("""
             SELECT 
                 rr.Booking_Id,
-                rr.Rating_Stars,
-                rr.Review,
-                rr.Date_published,
-                rr.Date_modified
+                rr.rating,
+                rr.review,
+                rr.date_published,
+                rr.date_modified
             FROM 
                 Rating_and_Reviews rr
             JOIN 
                 Booking_Reservations br ON rr.Booking_Id = br.Booking_Id
             WHERE 
-                br.Customer_Id = %s
+                br.Customer_Id = 196856
             ORDER BY
-                rr.Date_published DESC
+                rr.date_published DESC
         """, (customer_id,))
         
         # Fetch all reviews

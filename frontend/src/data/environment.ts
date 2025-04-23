@@ -6,6 +6,8 @@ const apiEndpoints = {
   bookingSummary: `${base_url}/booking/summary`,
   bookingConfirm: `${base_url}/booking/confirm`,
   search: `${base_url}/search/cars`,
+  bookingHistory: `${base_url}/booking/history`, // New endpoint added here
+  reviews: `${base_url}//reviews/user`
 };
 
 export default apiEndpoints;

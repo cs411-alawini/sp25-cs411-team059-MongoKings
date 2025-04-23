@@ -8,6 +8,10 @@ import { useNavigate } from "react-router-dom";
 import { Dropdown, Form, FormControl } from "react-bootstrap";
 import apiEndpoints from "../../data/environment";
 import Car from "../../types/Car/Car";
+import User from "../../types/Authentication/User";
+import Booking from "../../types/Booking/Booking";
+import Review from "../../types/Review/Review"
+
 const Dashboard = () => {
   const [activeTime, setActiveTime] = useState('all');
   const [searchInput, setSearchInput] = useState('');
@@ -17,6 +21,14 @@ const Dashboard = () => {
   const [isFilterPageOpen, setIsFilterPageOpen] = useState(false);
   const [showLoginPage, setShowLoginPage] = useState(false);
   const [bookings, setBookings] = useState<any[]>([]);
+
+  const [isLoadingBookings, setIsLoadingBookings] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+
+  const [reviews, setReviews] = useState<Review[]>([]);  // Add this for reviews
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+
 
   const { user, isLoading, error } = useAppSelector((state) => state.auth);
   const cars = useAppSelector(selectCarList);
@@ -38,6 +50,86 @@ const Dashboard = () => {
   };
 
   // console.log(cars)
+
+  const fetchBookingHistory = async () => {
+    // console.log("User in fetchBookingHistory:", user);
+    if (!user?.customer_id) return;
+    
+    setIsLoadingBookings(true);
+    setBookingError(null);
+    
+    try {
+      const response = await fetch(`${apiEndpoints.bookingHistory}?customer_id=${user.customer_id}`, {
+        method: "GET",
+        headers: { 
+          "Content-Type": "application/json",
+          // Add authorization header if needed
+          // "Authorization": `Bearer ${user.token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch booking history");
+      }
+      
+      const data = await response.json();
+      setBookings(data.bookings || []);
+    } catch (err) {
+      console.error("Error fetching booking history:", err);
+      setBookingError("Failed to load your booking history. Please try again later.");
+    } finally {
+      setIsLoadingBookings(false);
+    }
+  };
+
+  const fetchReviews = async () => {
+    if (!user?.customer_id) return;
+    
+    setIsLoadingReviews(true);
+    setReviewError(null);
+    
+    try {
+      const response = await fetch(`${apiEndpoints.bookingHistory}?customer_id=${user.customer_id}`, {
+        method: "GET",
+        headers: { 
+          "Content-Type": "application/json",
+          // Add authorization header if needed
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch reviews");
+      }
+      
+      const data = await response.json();
+      
+      // Filter bookings to get only those with reviews
+      const reviewsData = data.bookings
+        .filter((booking: Booking) => booking.review)
+        .map((booking: Booking) => ({
+          booking_id: booking.booking_id,
+          car_id: booking.car_id,
+          vehicle_make: booking.vehicle_make,
+          vehicle_model: booking.vehicle_model,
+          rating_stars: booking.review?.rating || 0,
+          review: booking.review?.review_text || "",
+          date_published: booking.review?.published_date || "",
+          date_modified: booking.review?.modified_date || ""
+        }));
+      
+      setReviews(reviewsData);
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
+      setReviewError("Failed to load your reviews. Please try again later.");
+    } finally {
+      setIsLoadingReviews(false);
+    }
+  };
+
+  const getCarDetails = (carId: number) => {
+    return cars.find(car => car.Car_Id === carId) || null;
+  };
+
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -73,6 +165,8 @@ const Dashboard = () => {
   useEffect(() => {
     if (user) {
       setShowLoginPage(false);
+      fetchBookingHistory();
+      fetchReviews();
     }
   }, [user]);
 
@@ -255,6 +349,101 @@ const Dashboard = () => {
               </div>
             )}
           </section>
+
+          {/* Previous Bookings Section */}
+<section className="previous-bookings-section">
+  <div className="bookings-header">
+    <h2>Previous Bookings</h2>
+  </div>
+  {isLoadingBookings ? (
+    <div className="loading-bookings">
+      <p>Loading your booking history...</p>
+    </div>
+  ) : bookingError ? (
+    <div className="booking-error">
+      <p>{bookingError}</p>
+    </div>
+  ) : bookings.length === 0 ? (
+    <div className="no-bookings-message">
+      <p>No previous bookings found</p>
+    </div>
+  ) : (
+    <div className="bookings-grid">
+      {bookings.map(booking => (
+        <div key={booking.booking_id} className="booking-card">
+          <div className="booking-info">
+            <h3 className="booking-car-id">
+              {booking.vehicle_make} {booking.vehicle_model} (ID: {booking.car_id})
+            </h3>
+            <div className="booking-dates">
+              <div className="booking-date-item">
+                <span className="date-label">Start Date</span>
+                <span className="date-value">{booking.start_date}</span>
+              </div>
+              <div className="booking-date-item">
+                <span className="date-label">End Date</span>
+                <span className="date-value">{booking.end_date}</span>
+              </div>
+            </div>
+            <div className="booking-amount">
+              <span className="amount-label">Total Amount</span>
+              <span className="amount-value">${booking.payment}</span>
+            </div>
+            {booking.review && (
+              <div className="booking-review">
+                <div className="review-rating">
+                  {'★'.repeat(booking.review.rating)}{'☆'.repeat(5 - booking.review.rating)}
+                </div>
+                <p className="review-text">{booking.review.review_text}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</section>
+
+{/* Previous Reviews Section */}
+<section className="previous-reviews-section">
+  <div className="reviews-header">
+    <h2>Previous Reviews</h2>
+  </div>
+  {isLoadingReviews ? (
+    <div className="loading-reviews">
+      <p>Loading your reviews...</p>
+    </div>
+  ) : reviewError ? (
+    <div className="review-error">
+      <p>{reviewError}</p>
+    </div>
+  ) : reviews.length === 0 ? (
+    <div className="no-reviews-message">
+      <p>No previous reviews found</p>
+    </div>
+  ) : (
+    <div className="reviews-grid">
+      {reviews.map(review => (
+        <div key={review.booking_id} className="review-card">
+          <div className="review-info">
+            <h3 className="review-car-info">
+              {review.vehicle_make} {review.vehicle_model}
+            </h3>
+            <div className="review-rating">
+              {'★'.repeat(review.rating_stars)}{'☆'.repeat(5 - review.rating_stars)}
+            </div>
+            <div className="review-text">
+              <p>{review.review}</p>
+            </div>
+            <div className="review-date">
+              <span>Posted on: {review.date_published}</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</section>
         </main>
       )}
     </div>
