@@ -103,44 +103,23 @@ def booking_summary():
             connection.rollback()
             return {"message": "Unable to book"}, 404
 
+        # if confirm:
+        #     cursor.execute("""
+        #         INSERT INTO Booking_Reservations 
+        #             (Customer_Id, Car_Id, Booking_Start_Date, Booking_End_Date, Booking_Duration)
+        #         VALUES (%s, %s, %s, %s, %s)
+        #     """, (customer_id, car_id, start_date, end_date, duration))
 
-
-        if confirm:
-            booking_id = None
-            for _ in range(20):
-                temp_id = random.randint(100000, 999999)  # You can adjust the range
-                cursor.execute("SELECT 1 FROM Booking_Reservations WHERE Booking_Id = %s", (temp_id,))
-                if not cursor.fetchone():
-                    booking_id = temp_id
-                    break
-
-            if not booking_id:
-                connection.rollback()
-                return {"message": "Unable to generate a unique Booking ID"}, 500
-
-            cursor.execute("""
-                INSERT INTO Booking_Reservations 
-                    (Booking_Id, Customer_Id, Car_Id, start_date, end_date, Booking_Duration, Payment)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (
-                booking_id,
-                customer_id,
-                car_id,
-                start_date,
-                end_date,
-                duration,
-                total_result[4]  # Total_Payment
-            ))
         connection.commit()
 
         return jsonify({
-    # "message": "Booking confirmed!",
-    "customer_name": total_result[0],
-    "customer_id": total_result[1],
-    "total_payment": float(total_result[4]),
-    "insurance_val": float(total_result[5]),
-    "discount_price": float(discount_result[0]) if discount_result else None
-}), 200
+                "message": "Booking confirmed!",
+                "booking_id": total_result[0],
+                "customer_id": total_result[2],
+                "customer_name": total_result[1],
+                "total_payment": float(total_result[5]),
+                "discount_price": float(discount_result[0]) if discount_result else None
+        }), 200
 
     except Exception as e:
         connection.rollback() 
