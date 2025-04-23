@@ -4,7 +4,8 @@ const apiEndpoints = {
   register: `${base_url}/register`,
   car: `${base_url}/car`,
   bookingSummary: `${base_url}/booking/summary`,
-  bookingConfirm: `${base_url}/booking/confirm`
+  bookingConfirm: `${base_url}/booking/confirm`,
+  search: `${base_url}/search/cars`,
 };
 
 export default apiEndpoints;

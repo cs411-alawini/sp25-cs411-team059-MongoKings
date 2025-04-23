@@ -5,6 +5,9 @@ import './styles.css';
 import CarCard from "./CarCard";
 import { selectCarList } from "../../services/Car/CarSelectors";
 import { useNavigate } from "react-router-dom";
+import { Dropdown, Form, FormControl } from "react-bootstrap";
+import apiEndpoints from "../../data/environment";
+import Car from "../../types/Car/Car";
 const Dashboard = () => {
   const [activeTime, setActiveTime] = useState('all');
   const [searchInput, setSearchInput] = useState('');
@@ -17,12 +20,24 @@ const Dashboard = () => {
 
   const { user, isLoading, error } = useAppSelector((state) => state.auth);
   const cars = useAppSelector(selectCarList);
-  console.log('Cars:', cars);
+  const [dropdownItems, setDropdownItems] = useState<Car[]>([]);
   const dispatch = useAppDispatch();
-  const navigate = useNavigate(); 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const navigate = useNavigate();
+  const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(e.target.value);
+    console.log('Search input:', e.target.value);
+    // searched_items = fetch by { searchTerm: e.target.value }
+    const response = await fetch(apiEndpoints.search, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ searchTerm: e.target.value })
+    });
+    const data = await response.json();
+    setDropdownItems(data);
+    console.log('Dropdown items:', data);
   };
+
+  // console.log(cars)
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -62,42 +77,6 @@ const Dashboard = () => {
   }, [user]);
 
 
-  const carListings = [
-    {
-      id: 1,
-      name: 'Luxury Sedan (Gasoline)',
-      type: 'Sedan',
-      fuelType: 'Gasoline',
-      location: 'Downtown',
-      date: '17/08/2023',
-      rate: '$50/day',
-      city: 'City Center',
-      image: '/api/placeholder/250/250'
-    },
-    {
-      id: 2,
-      name: 'Electric SUV (Battery)',
-      type: 'SUV',
-      fuelType: 'Electric',
-      location: 'Uptown',
-      date: '18/08/2023',
-      rate: '$65/day',
-      city: 'Metro Area',
-      image: '/api/placeholder/250/250'
-    },
-    {
-      id: 3,
-      name: 'Compact Hybrid',
-      type: 'Compact',
-      fuelType: 'Hybrid',
-      location: 'Airport',
-      date: '19/08/2023',
-      rate: '$45/day',
-      city: 'Airport Zone',
-      image: '/api/placeholder/250/250'
-    }
-  ];
-
   // Results page view
   const renderResultsPage = () => (
     <div className="results-container">
@@ -117,28 +96,6 @@ const Dashboard = () => {
         </button>
       </div>
 
-      {/* Car Listings */}
-      <div className="car-listings">
-        {carListings.map((car) => (
-          <div key={car.id} className="car-listing-item">
-            {/* Car Image */}
-            <div className="car-image">
-              <img src={car.image} alt={car.name} />
-            </div>
-
-            {/* Car Details */}
-            <div className="car-details">
-              <h3>{car.name}</h3>
-              <p>{car.city} - {car.date}</p>
-              <p className="car-rate">Rate: {car.rate}</p>
-              <p>Location: {car.location}</p>
-
-              {/* Right Arrow */}
-              <div className="car-arrow">▶</div>
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 
@@ -165,7 +122,28 @@ const Dashboard = () => {
             <div className="hero-content">
               <h1>Discover the perfect ride for your journey.</h1>
               <div className="search-form-container">
-                <form onSubmit={handleSearchSubmit}>
+                <Form>
+                  <FormControl type="text" placeholder="Enter location or car model" value={searchInput} onChange={handleSearchChange} />
+                </Form>
+                {searchInput && (
+                  <Dropdown.Menu show style={{
+                    position: "absolute",
+                    top: "100%",
+                    left: 0,
+                    right: 0,
+                    zIndex: 1000,
+                    marginTop: "3px",
+                  }}
+                  >
+                    {dropdownItems.map((item, index) => (
+                      <Dropdown.Item key={index} > 
+                      {/* We will add a on click handler here to navigate to the car details page */}
+                        {item.Car_Id} - {item.Vehicle_Model} {item.Vehicle_Make} - {item.State}
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                )}
+                {/* <form onSubmit={handleSearchSubmit}>
                   <input
                     type="text"
                     placeholder="Enter location or car model"
@@ -173,13 +151,13 @@ const Dashboard = () => {
                     onChange={handleSearchChange}
                   />
                   <button className="search-button">Search</button>
-                </form>
+                </form> */}
               </div>
               <p>Book your ideal car with ease and convenience at the most competitive rates.</p>
             </div>
           </section>
 
-          
+
 
           {/* Popular in New York */}
           <section className="popular-section">
@@ -236,9 +214,9 @@ const Dashboard = () => {
               <div className="bookings-grid">
                 {bookings.map(booking => (
                   <div key={booking.id} className="booking-card">
-                    <img 
-                      src={booking.image} 
-                      alt={`Car ${booking.carId}`} 
+                    <img
+                      src={booking.image}
+                      alt={`Car ${booking.carId}`}
                       className="booking-image"
                     />
                     <div className="booking-info">
@@ -259,13 +237,13 @@ const Dashboard = () => {
                       </div>
                     </div>
                     <div className="booking-actions">
-                      <button 
+                      <button
                         onClick={() => handleEditBooking(booking.id, booking.carId)}
                         className="edit-button"
                       >
                         ✏️ Edit
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDeleteBooking(booking.id)}
                         className="delete-button"
                       >
