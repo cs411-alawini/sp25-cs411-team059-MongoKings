@@ -5,6 +5,7 @@ import { dashboardCar } from "../../routes";
 function CarCard(car: Car) {
     const navigate = useNavigate();
     const onClick = (carId: number) => {
+        console.log(`${dashboardCar}/${carId}`)
         navigate(`${dashboardCar}/${carId}`);
     };
 

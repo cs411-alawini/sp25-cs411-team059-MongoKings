@@ -56,7 +56,8 @@ function RentNowForm() {
             body: JSON.stringify({
                 car_id: parseInt(carId),
                 start_date: startDate,
-                end_date: endDate
+                end_date: endDate,
+                customer_id: user?.customer_id,
             })
         });
 

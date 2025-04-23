@@ -40,7 +40,6 @@ function AppRouter() {
     }
   >
     <Route path={`car/:carId`} element={<RentNowForm />} />
-    <Route path={`car/:carId/edit/:bookingId`} element={<RentNowForm />} />
     <Route index element={<Dashboard />} />
   </Route>
   <Route path={all} element={<Navigate to={login} />} />
