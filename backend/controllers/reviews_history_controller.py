@@ -2,7 +2,6 @@ from flask import Blueprint, request, jsonify
 from extensions import db
 
 reviews_blueprint = Blueprint("reviews", __name__)
-
 @reviews_blueprint.route("/reviews/user", methods=["GET"])
 def get_user_reviews():
     # Get customer_id from request parameters
@@ -54,8 +53,7 @@ def get_user_reviews():
             "customer_id": customer_id,
             "review_count": len(user_reviews),
             "reviews": user_reviews
-        }), 200
-            
+        }), 200           
     except Exception as e:
         return {"message": f"Failed to retrieve user reviews: {str(e)}"}, 500
     finally:

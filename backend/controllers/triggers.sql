@@ -11,7 +11,7 @@ BEGIN
     
     IF rental_count > 10 THEN
         UPDATE Car_Rental_Info
-        SET Daily_Price = Daily_Price * 1.01
+        SET Daily_Price = Daily_Price * 1.03
         WHERE Car_Id = NEW.Car_Id;
     END IF;
 END //

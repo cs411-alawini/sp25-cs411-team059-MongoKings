@@ -12,7 +12,7 @@ import User from "../../types/Authentication/User";
 import Booking from "../../types/Booking/Booking";
 import Review from "../../types/Review/Review"
 import DropdownItem from "../../types/Search/DropdownItem";
-
+import { Container, Row, Col, Card, Spinner, Alert, Button } from 'react-bootstrap';
 const Dashboard = () => {
   const [activeTime, setActiveTime] = useState('all');
   const [searchInput, setSearchInput] = useState('');
@@ -33,6 +33,7 @@ const Dashboard = () => {
 
   const { user, isLoading, error } = useAppSelector((state) => state.auth);
   const cars = useAppSelector(selectCarList);
+  // We got the user here, 
   const [dropdownItems, setDropdownItems] = useState<DropdownItem[]>([]);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -45,87 +46,80 @@ const Dashboard = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ searchTerm: e.target.value })
     });
-    const data = await response.json();
-    setDropdownItems(data);
-    console.log('Dropdown items:', data);
+    if (response.ok) {
+      const data = await response.json();
+      setDropdownItems(data);
+      console.log('Dropdown items:', data);
+    } else {
+      setDropdownItems([]);
+      console.error('Failed to fetch dropdown items');
+    }
   };
 
   // console.log(cars)
 
   const fetchBookingHistory = async () => {
     // console.log("User in fetchBookingHistory:", user);
-    if (!user?.customer_id) return;
-    
-    setIsLoadingBookings(true);
-    setBookingError(null);
-    
-    try {
-      const response = await fetch(`${apiEndpoints.bookingHistory}?customer_id=${user.customer_id}`, {
-        method: "GET",
-        headers: { 
-          "Content-Type": "application/json",
-          // Add authorization header if needed
-          // "Authorization": `Bearer ${user.token}`
-        }
+      const response = await fetch(apiEndpoints.bookingHistory, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer_id: user?.customer_id
+        })
       });
       
-      if (!response.ok) {
-        throw new Error("Failed to fetch booking history");
+      if (response.ok) {
+        const data = await response.json();
+        setBookings(data.bookings || []);
+      } else {
+        const error = await response.json();
+        alert(error.message || "Failed to fetch booking history.");
       }
-      
-      const data = await response.json();
-      setBookings(data.bookings || []);
-    } catch (err) {
-      console.error("Error fetching booking history:", err);
-      setBookingError("Failed to load your booking history. Please try again later.");
-    } finally {
-      setIsLoadingBookings(false);
-    }
   };
 
-  const fetchReviews = async () => {
-    if (!user?.customer_id) return;
+  // const fetchReviews = async () => {
+  //   if (!user?.customer_id) return;
     
-    setIsLoadingReviews(true);
-    setReviewError(null);
+  //   setIsLoadingReviews(true);
+  //   setReviewError(null);
     
-    try {
-      const response = await fetch(`${apiEndpoints.bookingHistory}?customer_id=${user.customer_id}`, {
-        method: "GET",
-        headers: { 
-          "Content-Type": "application/json",
-          // Add authorization header if needed
-        }
-      });
+  //   try {
+  //     const response = await fetch(`${apiEndpoints.bookingHistory}?customer_id=${user.customer_id}`, {
+  //       method: "GET",
+  //       headers: { 
+  //         "Content-Type": "application/json",
+  //         // Add authorization header if needed
+  //       }
+  //     });
       
-      if (!response.ok) {
-        throw new Error("Failed to fetch reviews");
-      }
+  //     if (!response.ok) {
+  //       throw new Error("Failed to fetch reviews");
+  //     }
       
-      const data = await response.json();
+  //     const data = await response.json();
       
-      // Filter bookings to get only those with reviews
-      const reviewsData = data.bookings
-        .filter((booking: Booking) => booking.review)
-        .map((booking: Booking) => ({
-          booking_id: booking.booking_id,
-          car_id: booking.car_id,
-          vehicle_make: booking.vehicle_make,
-          vehicle_model: booking.vehicle_model,
-          rating_stars: booking.review?.rating || 0,
-          review: booking.review?.review_text || "",
-          date_published: booking.review?.published_date || "",
-          date_modified: booking.review?.modified_date || ""
-        }));
+  //     // Filter bookings to get only those with reviews
+  //     const reviewsData = data.bookings
+  //       .filter((booking: Booking) => booking.review)
+  //       .map((booking: Booking) => ({
+  //         booking_id: booking.booking_id,
+  //         car_id: booking.car_id,
+  //         vehicle_make: booking.vehicle_make,
+  //         vehicle_model: booking.vehicle_model,
+  //         rating_stars: booking.review?.rating || 0,
+  //         review: booking.review?.review_text || "",
+  //         date_published: booking.review?.published_date || "",
+  //         date_modified: booking.review?.modified_date || ""
+  //       }));
       
-      setReviews(reviewsData);
-    } catch (err) {
-      console.error("Error fetching reviews:", err);
-      setReviewError("Failed to load your reviews. Please try again later.");
-    } finally {
-      setIsLoadingReviews(false);
-    }
-  };
+  //     setReviews(reviewsData);
+  //   } catch (err) {
+  //     console.error("Error fetching reviews:", err);
+  //     setReviewError("Failed to load your reviews. Please try again later.");
+  //   } finally {
+  //     setIsLoadingReviews(false);
+  //   }
+  // };
 
   const getCarDetails = (carId: number) => {
     return cars.find(car => car.Car_Id === carId) || null;
@@ -167,7 +161,7 @@ const Dashboard = () => {
     if (user) {
       setShowLoginPage(false);
       fetchBookingHistory();
-      fetchReviews();
+      // fetchReviews();
     }
   }, [user]);
 
@@ -199,6 +193,14 @@ const Dashboard = () => {
   };
 
   function handleDeleteBooking(id: number): void {
+    throw new Error("Function not implemented.");
+  }
+
+  function onEdit(booking: any): void {
+    throw new Error("Function not implemented.");
+  }
+
+  function onDelete(booking_id: any): void {
     throw new Error("Function not implemented.");
   }
 
@@ -300,112 +302,87 @@ const Dashboard = () => {
 
           {/* Previous Bookings Section */}
           <section className="previous-bookings-section">
-            <div className="bookings-header">
-              <h2>Previous Bookings</h2>
-            </div>
-            {bookings.length === 0 ? (
-              <div className="no-bookings-message">
-                <p>No previous bookings found</p>
-              </div>
-            ) : (
-              <div className="bookings-grid">
-                {bookings.map(booking => (
-                  <div key={booking.id} className="booking-card">
-                    <img
-                      src={booking.image}
-                      alt={`Car ${booking.carId}`}
-                      className="booking-image"
-                    />
-                    <div className="booking-info">
-                      <h3 className="booking-car-id">{booking.carId}</h3>
-                      <div className="booking-dates">
-                        <div className="booking-date-item">
-                          <span className="date-label">Start Date</span>
-                          <span className="date-value">{booking.startDate}</span>
-                        </div>
-                        <div className="booking-date-item">
-                          <span className="date-label">End Date</span>
-                          <span className="date-value">{booking.endDate}</span>
-                        </div>
-                      </div>
-                      <div className="booking-amount">
-                        <span className="amount-label">Total Amount</span>
-                        <span className="amount-value">{booking.totalAmount}</span>
-                      </div>
+      <Container>
+        <Row className="mb-4">
+          <Col>
+            <h2 className="text-center">Previous Bookings</h2>
+          </Col>
+        </Row>
+
+        {isLoadingBookings ? (
+          <Row className="justify-content-center">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading your booking history...</span>
+            </Spinner>
+          </Row>
+        ) : bookingError ? (
+          <Alert variant="danger" className="text-center">
+            {bookingError}
+          </Alert>
+        ) : bookings.length === 0 ? (
+          <Alert variant="info" className="text-center">
+            No previous bookings found
+          </Alert>
+        ) : (
+          <Row xs={1} sm={2} md={3} className="g-4">
+            {bookings.map((booking) => (
+              <Col key={booking.booking_id}>
+                <Card>
+                  <Card.Body>
+                    <Card.Title>
+                      {booking.start_date} - {booking.end_date} (ID: {booking.car_id})
+                    </Card.Title>
+
+                    <div className="mb-2">
+                      <strong>Start Date:</strong> {booking.start_date}
                     </div>
-                    <div className="booking-actions">
-                      <button
-                        onClick={() => handleEditBooking(booking.id, booking.carId)}
-                        className="edit-button"
+                    <div className="mb-2">
+                      <strong>End Date:</strong> {booking.end_date}
+                    </div>
+                    <div className="mb-3">
+                      <strong>Total Amount:</strong> ${booking.payment}
+                    </div>
+
+                    {booking.review && (
+                      <>
+                        <div className="mb-2 text-warning" style={{ fontSize: '1.2rem' }}>
+                          {'★'.repeat(booking.review.rating)}
+                          {'☆'.repeat(5 - booking.review.rating)}
+                        </div>
+                        <Card.Text>"{booking.review.review_text}"</Card.Text>
+                      </>
+                    )}
+
+                    <div className="d-flex justify-content-between mt-4">
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={() => onEdit(booking)}
                       >
-                        ✏️ Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteBooking(booking.id)}
-                        className="delete-button"
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => onDelete(booking.booking_id)}
                       >
                         Delete
-                      </button>
+                      </Button>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        )}
+      </Container>
+    </section>
 
-          {/* Previous Bookings Section */}
-<section className="previous-bookings-section">
-  <div className="bookings-header">
-    <h2>Previous Bookings</h2>
-  </div>
-  {isLoadingBookings ? (
-    <div className="loading-bookings">
-      <p>Loading your booking history...</p>
-    </div>
-  ) : bookingError ? (
-    <div className="booking-error">
-      <p>{bookingError}</p>
-    </div>
-  ) : bookings.length === 0 ? (
-    <div className="no-bookings-message">
-      <p>No previous bookings found</p>
-    </div>
-  ) : (
-    <div className="bookings-grid">
-      {bookings.map(booking => (
-        <div key={booking.booking_id} className="booking-card">
-          <div className="booking-info">
-            <h3 className="booking-car-id">
-              {booking.vehicle_make} {booking.vehicle_model} (ID: {booking.car_id})
-            </h3>
-            <div className="booking-dates">
-              <div className="booking-date-item">
-                <span className="date-label">Start Date</span>
-                <span className="date-value">{booking.start_date}</span>
-              </div>
-              <div className="booking-date-item">
-                <span className="date-label">End Date</span>
-                <span className="date-value">{booking.end_date}</span>
-              </div>
-            </div>
-            <div className="booking-amount">
-              <span className="amount-label">Total Amount</span>
-              <span className="amount-value">${booking.payment}</span>
-            </div>
-            {booking.review && (
-              <div className="booking-review">
-                <div className="review-rating">
-                  {'★'.repeat(booking.review.rating)}{'☆'.repeat(5 - booking.review.rating)}
-                </div>
-                <p className="review-text">{booking.review.review_text}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-  )}
-</section>
+
+
+
+
+
 
 {/* Previous Reviews Section */}
 <section className="previous-reviews-section">
