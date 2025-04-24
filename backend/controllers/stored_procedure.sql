@@ -1,4 +1,4 @@
-CREATE VIEW car_ratings_view_sss AS
+CREATE VIEW car_ratings_view_final AS
 SELECT
     cri.Car_Id,
     cri.Daily_Price,
@@ -6,12 +6,9 @@ SELECT
     cri.City,
     cri.State,
     cri.Vehicle_Type,
-    AVG(rr.Rating) AS Average_Rating,
-    IF(AVG(rr.Rating) >= 5, 'perfect',
-        IF(AVG(rr.Rating) >= 4, 'good',
-            IF(AVG(rr.Rating) >= 3, 'okay', NULL)
-        )
-    ) AS Rating_Category
+    cri.Vehicle_Make,
+    cri.Vehicle_model,
+    AVG(rr.Rating) AS Average_Rating
 FROM 
     Car_Rental_Info cri 
 LEFT JOIN 
@@ -24,47 +21,102 @@ HAVING
     AVG(rr.Rating) >= 3;
 
 
-
-
-CREATE VIEW state_availability_view_sss AS 
+CREATE VIEW state_availability_view_final AS 
 SELECT 
-    c.car_id,
-    c.state
+    distinct c.car_id,
+    c.state,
+    c.Daily_Price,
+    c.Fuel_Type,
+    c.Vehicle_Type,
+    c.Vehicle_Make,
+    c.Vehicle_model,
+    c.City
     FROM
-    Car_Rental_Info c 
+    Car_Rental_Info c
+    LEFT JOIN Booking_Reservations b 
+    ON c.car_id = b.car_id
 WHERE 
     c.car_id NOT IN (
         SELECT car_id 
         FROM Booking_Reservations b 
         WHERE b.end_date >= CURDATE() 
-          AND b.start_date <= CURDATE() + INTERVAL 30 DAY
+        AND b.start_date <= CURDATE() + INTERVAL 30 DAY
     )
-GROUP BY c.state, c.car_id;
-
+    GROUP BY Car_Id
 
 
 DELIMITER //
 
-CREATE PROCEDURE SearchCarsWithRating(
-    IN p_search_term VARCHAR(255),
+CREATE PROCEDURE SearchCarsWithRating_final_check(
+    IN p_search_term VARCHAR(255)
 )
 BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_state VARCHAR(255);
+    DECLARE v_car_id VARCHAR(255);
+    DECLARE v_daily_price DECIMAL(10);
+    DECLARE v_fuel_type VARCHAR(50);
+    DECLARE v_avg_rating DECIMAL(10);
+    DECLARE v_rating_description VARCHAR(255);
 
-    SELECT 
-        r.Car_Id,
-        r.Daily_Price,
-        r.Fuel_Type,
-        r.Rating_Category
-    FROM 
-        car_ratings_view_sss r
-    JOIN 
-        state_availability_view_sss s ON r.car_id = s.car_id
-    -- WHERE 
-    --     -- SOUNDEX(City) = SOUNDEX(p_search_term)
-    --     -- OR SOUNDEX(State) = SOUNDEX(p_search_term)
-    --     -- OR SOUNDEX(Vehicle_Type) = SOUNDEX(p_search_term)
-    --     -- OR SOUNDEX(Fuel_Type) = SOUNDEX(p_search_term)
-    ORDER BY 
-        r.Daily_Price;
+    DECLARE car_cursor CURSOR FOR
+        SELECT 
+            s.State,
+            s.Car_Id,
+            s.Daily_Price,
+            s.Fuel_Type,
+            IFNULL(r.Average_Rating, 0) AS Average_Rating
+        FROM 
+            state_availability_view_final s 
+        LEFT JOIN 
+            car_ratings_view_final r ON r.car_id = s.car_id
+        WHERE 
+            SOUNDEX(s.State) = SOUNDEX(p_search_term)
+            OR SOUNDEX(s.Vehicle_Type) = SOUNDEX(p_search_term)
+            OR SOUNDEX(s.Car_Id) = SOUNDEX(p_search_term)
+            OR SOUNDEX(s.Vehicle_Make) = SOUNDEX(p_search_term)
+            OR SOUNDEX(s.Vehicle_model) = SOUNDEX(p_search_term)
+            OR SOUNDEX(s.Fuel_Type) = SOUNDEX(p_search_term)
+        ORDER BY Average_Rating DESC, Daily_Price;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+
+    CREATE TABLE final_results (
+        State_name VARCHAR(255),
+        Car_Id VARCHAR(255),
+        Daily_Price DECIMAL(10),
+        Fuel_Type VARCHAR(255),
+        Average_Rating DECIMAL(10),
+        Rating_Description VARCHAR(255)
+    );
+
+    OPEN car_cursor;
+
+    read_loop: LOOP
+        FETCH car_cursor INTO  v_state, v_car_id, v_daily_price, v_fuel_type, v_avg_rating;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        IF v_avg_rating > 5 THEN
+            SET v_rating_description = 'Good';
+        ELSEIF v_avg_rating >  THEN
+            SET v_rating_description = 'Bad';
+        ELSE
+            SET v_rating_description = 'Poor';
+        END IF;
+
+        INSERT INTO final_results 
+            (State_name, Car_Id, Daily_Price, Fuel_Type, Average_Rating, Rating_Description)
+        VALUES 
+            (v_state, v_car_id, v_daily_price, v_fuel_type, v_avg_rating, v_rating_description);
+    END LOOP;
+
+    CLOSE car_cursor;
+
+
+    SELECT * FROM final_results ORDER BY Daily_Price;
+    DROP TABLE final_results;
 END //
-DELIMITER;
+
+DELIMITER ;
