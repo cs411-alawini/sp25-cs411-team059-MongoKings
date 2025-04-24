@@ -4,6 +4,7 @@ import { dashboard } from "../../routes";
 import apiEndpoints from "../../data/environment";
 import { useAppSelector } from "../../app/hooks";
 import { selectAuthUser } from "../../services/Auth/AuthSelectors";
+import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 
 function RentNowForm() {
     const navigate = useNavigate();
@@ -71,35 +72,59 @@ function RentNowForm() {
     };
 
     return (
-        <div className="app-container">
-            <h1>Rent Now - Car ID: {carId}</h1>
-
-            <label>
-                Start Date:
-                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-            </label>
-
-            <label>
-                End Date:
-                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-            </label>
-
-            <button onClick={handleCheckAvailability}>Check Availability & Price</button>
-
+        <Container className="mt-4">
+            <h1 className="mb-4">Rent Now - Car ID: {carId}</h1>
+    
+            <Form>
+                <Row className="mb-3">
+                    <Col md={6}>
+                        <Form.Group controlId="startDate">
+                            <Form.Label>Start Date</Form.Label>
+                            <Form.Control
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                            />
+                        </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                        <Form.Group controlId="endDate">
+                            <Form.Label>End Date</Form.Label>
+                            <Form.Control
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                            />
+                        </Form.Group>
+                    </Col>
+                </Row>
+    
+                <Button variant="primary" onClick={handleCheckAvailability}>
+                    Check Availability & Price
+                </Button>
+            </Form>
+    
             {summary && (
-                <div>
-                    <h2>Summary</h2>
-                    <p>Customer: {summary.customer_name}</p>
-                    <p>Total Payment: ${summary.total_payment}</p>
-                    <p>Insurance: ${summary.insurance_val}</p>
-                    {summary.discount_price && <p>Discounted Daily Rate: ${summary.discount_price}</p>}
-                    <button onClick={handleConfirmBooking}>Confirm Booking</button>
-                </div>
+                <Card className="mt-4">
+                    <Card.Body>
+                        <Card.Title>Summary</Card.Title>
+                        <Card.Text>Customer: {summary.customer_name}</Card.Text>
+                        <Card.Text>Total Payment: ${summary.total_payment}</Card.Text>
+                        <Card.Text>Insurance: ${summary.insurance_val}</Card.Text>
+                        {summary.discount_price && (
+                            <Card.Text>Discounted Daily Rate: ${summary.discount_price}</Card.Text>
+                        )}
+                        <Button variant="success" onClick={handleConfirmBooking}>
+                            Confirm Booking
+                        </Button>
+                    </Card.Body>
+                </Card>
             )}
-
-            <button onClick={() => navigate(dashboard)}>Back to Dashboard</button>
-        </div>
-    );
-}
+    
+            <Button variant="secondary" className="mt-3" onClick={() => navigate(dashboard)}>
+                Back to Dashboard
+            </Button>
+        </Container>
+    );}
 
 export default RentNowForm;
