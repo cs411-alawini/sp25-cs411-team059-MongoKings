@@ -44,7 +44,7 @@ WHERE
     )
     GROUP BY Car_Id
 
-
+DROP PROCEDURE IF EXISTS SearchCarsWithRating_final_check;
 DELIMITER //
 
 CREATE PROCEDURE SearchCarsWithRating_final_check(
@@ -65,7 +65,7 @@ BEGIN
             s.Car_Id,
             s.Daily_Price,
             s.Fuel_Type,
-            IFNULL(r.Average_Rating, 0) AS Average_Rating
+            IFNULL(r.Average_Rating, 1.5) AS Average_Rating
         FROM 
             state_availability_view_final s 
         LEFT JOIN 
@@ -81,7 +81,7 @@ BEGIN
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
 
-    CREATE TABLE final_results (
+    CREATE TABLE IF NOT EXISTS final_results (
         State_name VARCHAR(255),
         Car_Id VARCHAR(255),
         Daily_Price DECIMAL(10),
@@ -100,8 +100,8 @@ BEGIN
 
         IF v_avg_rating > 5 THEN
             SET v_rating_description = 'Good';
-        ELSEIF v_avg_rating >  THEN
-            SET v_rating_description = 'Bad';
+        ELSEIF v_avg_rating > 3 THEN
+            SET v_rating_description = 'Okay';
         ELSE
             SET v_rating_description = 'Poor';
         END IF;
@@ -116,7 +116,7 @@ BEGIN
 
 
     SELECT * FROM final_results ORDER BY Daily_Price;
-    DROP TABLE final_results;
+    DROP TABLE IF EXISTS final_results;
 END //
 
 DELIMITER ;
