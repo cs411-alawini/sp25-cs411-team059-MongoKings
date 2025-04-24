@@ -21,26 +21,24 @@ def search_car():
         car_  = cursor.fetchall()
         
         if not car_:
-            return {"message": "No similar search choices are provided here"}, 404
+            return jsonify([]), 200
         
         car_data = []
         for car_val in car_:
             car_data.append({
                 "State": car_val[0],
-                "Car_Id": booking[1],
-                "Daily_Price": booking[2],
-                "Fuel_Type": booking[3],
-                "Average_Rating": booking[4],
-                "Rating_Description": float(booking[5])
+                "Car_Id": int(car_val[1]),
+                "Daily_Price": int(car_val[2]),
+                "Fuel_Type":car_val[3],
+                "Average_Rating": car_val[4],
+                "Rating_Description": car_val[5]
             })
             
-        return jsonify({
-            "results": car_data,
-            "count": len(car_data)
-        }), 200
+        return jsonify(car_data), 200
             
     except Exception as e:
-        return {"message": f"Failed to retrieve booking history: {str(e)}"}, 500
+        print(e)
+        return jsonify([]), 200
     finally:
         cursor.close()
         connection.close()

@@ -11,6 +11,7 @@ import Car from "../../types/Car/Car";
 import User from "../../types/Authentication/User";
 import Booking from "../../types/Booking/Booking";
 import Review from "../../types/Review/Review"
+import DropdownItem from "../../types/Search/DropdownItem";
 
 const Dashboard = () => {
   const [activeTime, setActiveTime] = useState('all');
@@ -32,7 +33,7 @@ const Dashboard = () => {
 
   const { user, isLoading, error } = useAppSelector((state) => state.auth);
   const cars = useAppSelector(selectCarList);
-  const [dropdownItems, setDropdownItems] = useState<Car[]>([]);
+  const [dropdownItems, setDropdownItems] = useState<DropdownItem[]>([]);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -230,9 +231,11 @@ const Dashboard = () => {
                   }}
                   >
                     {dropdownItems.map((item, index) => (
-                      <Dropdown.Item key={index} > 
+                      <Dropdown.Item key={index} onClick={function() {
+                        navigate(`/dashboard/car/${item.Car_Id}`); // Navigate to the car details page
+                      }}> 
                       {/* We will add a on click handler here to navigate to the car details page */}
-                        {item.Car_Id}
+                        {item.Car_Id} - {item.Fuel_Type} - ${item.Daily_Price} - {item.Rating_Description}
                       </Dropdown.Item>
                     ))}
                   </Dropdown.Menu>
