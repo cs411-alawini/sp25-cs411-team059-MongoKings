@@ -1,19 +1,40 @@
+
+--  If the rental_count is greater than  1
 DELIMITER //
 CREATE TRIGGER increase_price
-AFTER INSERT ON Purchases
+AFTER INSERT ON Booking_Reservations
 FOR EACH ROW
 BEGIN
     DECLARE rental_count INT;
 
-    SELECT Number_of_Rentals INTO rental_count
-    FROM Car_Rental_Info
+    SELECT COUNT(*) INTO rental_count
+    FROM Booking_Reservations
     WHERE Car_Id = NEW.Car_Id;
-    
-    IF rental_count > 10 THEN
+
+    IF rental_count > 2 THEN
         UPDATE Car_Rental_Info
-        SET Daily_Price = Daily_Price * 1.03
+        SET Daily_Price = Daily_Price * 1.01
         WHERE Car_Id = NEW.Car_Id;
     END IF;
 END //
+DELIMITER ;
 
-DELIMITER;
+
+
+DELIMITER //
+CREATE TRIGGER increase_number_of_rentals
+AFTER INSERT ON Booking_Reservations
+FOR EACH ROW
+BEGIN
+    UPDATE Car_Rental_Info SET Number_of_trips = Number_of_trips + 1
+    WHERE Car_Id = NEW.Car_Id;
+    UPDATE Customer_Info SET Number_of_Rentals = Number_of_Rentals + 1
+    WHERE Customer_Id = NEW.Customer_Id;
+END //
+
+DELIMITER ;
+
+-- Here both of our triggers work as we needed 
+
+
+

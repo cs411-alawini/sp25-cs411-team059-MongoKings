@@ -197,13 +197,22 @@ const Dashboard = () => {
   }
 
   function onEdit(booking: any): void {
-    throw new Error("Function not implemented.");
+    const today = new Date();
+    const startDate = new Date(booking.start_date);
+    if (today >= startDate) {
+      alert("You can't edit this booking because it has already started or is in the past.");
+      return;
+  }
   }
 
-  function onDelete(booking_id: any): void {
-    throw new Error("Function not implemented.");
+  function onDelete(booking: any): void {
+    const today = new Date();
+    const startDate = new Date(booking.start_date);
+    if (today >= startDate) {
+      alert("You can't edit this booking because it has already started or is in the past.");
+      return;
   }
-
+  }
   return (
     <div className="app-container">
       {/* Main Content */}
@@ -364,7 +373,7 @@ const Dashboard = () => {
                       <Button
                         variant="outline-danger"
                         size="sm"
-                        onClick={() => onDelete(booking.booking_id)}
+                        onClick={() => onDelete(booking)}
                       >
                         Delete
                       </Button>
