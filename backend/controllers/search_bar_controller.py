@@ -14,32 +14,34 @@ def search_car():
     searchTerm = data.get("searchTerm", "").strip()
     if not searchTerm:
         return {"message": "Search term is required"}, 400
-    searchTerm = searchTerm.lower()
-    print(f"Search term: {searchTerm}")
-    # return jsonify([
-    #         {
-    #     "Car_Id": 5105,
-    #     "City": "Hillsborough",
-    #     "Daily_Price": 118,
-    #     "FuelType": "ELECTRIC",
-    #     "Number_of_trips": 20,
-    #     "State": "CA",
-    #     "Vehicle_Make": "Tesla",
-    #     "Vehicle_Model": "Model S",
-    #     "Vehicle_Type": "car",
-    #     "Vehicle_Year": 2017
-    # },
-    # {
-    #     "Car_Id": 14585,
-    #     "City": "Vestavia Hills",
-    #     "Daily_Price": 43,
-    #     "FuelType": "GASOLINE",
-    #     "Number_of_trips": 6,
-    #     "State": "AL",
-    #     "Vehicle_Make": "Lexus",
-    #     "Vehicle_Model": "RX 350",
-    #     "Vehicle_Type": "suv",
-    #     "Vehicle_Year": 2008
-    # }
-    # ])
+    connection = db.engine.raw_connection()
+    cursor = connection.cursor()
+    try:
+        cursor.callproc('SearchCarsWithRating_final_check', [searchTerm])
+        car_  = cursor.fetchall()
+        
+        if not car_:
+            return {"message": "No similar search choices are provided here"}, 404
+        
+        car_data = []
+        for car_val in car_:
+            car_data.append({
+                "State": car_val[0],
+                "Car_Id": booking[1],
+                "Daily_Price": booking[2],
+                "Fuel_Type": booking[3],
+                "Average_Rating": booking[4],
+                "Rating_Description": float(booking[5])
+            })
+            
+        return jsonify({
+            "results": car_data,
+            "count": len(car_data)
+        }), 200
+            
+    except Exception as e:
+        return {"message": f"Failed to retrieve booking history: {str(e)}"}, 500
+    finally:
+        cursor.close()
+        connection.close()
 

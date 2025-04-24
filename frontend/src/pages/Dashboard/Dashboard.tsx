@@ -138,7 +138,7 @@ const Dashboard = () => {
                     {dropdownItems.map((item, index) => (
                       <Dropdown.Item key={index} > 
                       {/* We will add a on click handler here to navigate to the car details page */}
-                        {item.Car_Id} - {item.Vehicle_Model} {item.Vehicle_Make} - {item.State}
+                        {item.Car_Id}
                       </Dropdown.Item>
                     ))}
                   </Dropdown.Menu>
