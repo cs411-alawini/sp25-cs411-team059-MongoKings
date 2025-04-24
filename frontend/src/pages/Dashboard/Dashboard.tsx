@@ -404,7 +404,7 @@ const Dashboard = () => {
                   {'★'.repeat(review.rating)}
                   {'☆'.repeat(5 - review.rating)}
                 </div>
-                <Card.Text>"{review.review_text}"</Card.Text>
+                <Card.Text>"{review.review}"</Card.Text>
                 <div className="text-muted mt-2">
                   <small>Posted on: {review.published_date}</small>
                   {review.modified_date && review.modified_date !== review.published_date && (

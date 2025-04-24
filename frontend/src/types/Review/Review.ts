@@ -4,7 +4,7 @@ interface Review {
     vehicle_make?: string;
     vehicle_model?: string;
     rating: number;
-    review_text: string;
+    review: string;
     published_date: string;
     modified_date: string;
   }
