@@ -77,49 +77,33 @@ const Dashboard = () => {
       }
   };
 
-  // const fetchReviews = async () => {
-  //   if (!user?.customer_id) return;
+  const fetchReviews = async () => {
+    if (!user?.customer_id) return;
     
-  //   setIsLoadingReviews(true);
-  //   setReviewError(null);
+    setIsLoadingReviews(true);
+    setReviewError(null);
     
-  //   try {
-  //     const response = await fetch(`${apiEndpoints.bookingHistory}?customer_id=${user.customer_id}`, {
-  //       method: "GET",
-  //       headers: { 
-  //         "Content-Type": "application/json",
-  //         // Add authorization header if needed
-  //       }
-  //     });
+    try {
+      const response = await fetch(`${apiEndpoints.reviews}?customer_id=${user.customer_id}`, {
+        method: "GET",
+        headers: { 
+          "Content-Type": "application/json"
+        }
+      });
       
-  //     if (!response.ok) {
-  //       throw new Error("Failed to fetch reviews");
-  //     }
+      if (!response.ok) {
+        throw new Error("Failed to fetch reviews");
+      }
       
-  //     const data = await response.json();
-      
-  //     // Filter bookings to get only those with reviews
-  //     const reviewsData = data.bookings
-  //       .filter((booking: Booking) => booking.review)
-  //       .map((booking: Booking) => ({
-  //         booking_id: booking.booking_id,
-  //         car_id: booking.car_id,
-  //         vehicle_make: booking.vehicle_make,
-  //         vehicle_model: booking.vehicle_model,
-  //         rating_stars: booking.review?.rating || 0,
-  //         review: booking.review?.review_text || "",
-  //         date_published: booking.review?.published_date || "",
-  //         date_modified: booking.review?.modified_date || ""
-  //       }));
-      
-  //     setReviews(reviewsData);
-  //   } catch (err) {
-  //     console.error("Error fetching reviews:", err);
-  //     setReviewError("Failed to load your reviews. Please try again later.");
-  //   } finally {
-  //     setIsLoadingReviews(false);
-  //   }
-  // };
+      const data = await response.json();
+      setReviews(data.reviews || []);
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
+      setReviewError("Failed to load your reviews. Please try again later.");
+    } finally {
+      setIsLoadingReviews(false);
+    }
+  };
 
   const getCarDetails = (carId: number) => {
     return cars.find(car => car.Car_Id === carId) || null;
@@ -161,7 +145,7 @@ const Dashboard = () => {
     if (user) {
       setShowLoginPage(false);
       fetchBookingHistory();
-      // fetchReviews();
+      fetchReviews();
     }
   }, [user]);
 
@@ -387,51 +371,53 @@ const Dashboard = () => {
       </Container>
     </section>
 
-
-
-
-
-
-
 {/* Previous Reviews Section */}
 <section className="previous-reviews-section">
-  <div className="reviews-header">
-    <h2>Previous Reviews</h2>
-  </div>
-  {isLoadingReviews ? (
-    <div className="loading-reviews">
-      <p>Loading your reviews...</p>
-    </div>
-  ) : reviewError ? (
-    <div className="review-error">
-      <p>{reviewError}</p>
-    </div>
-  ) : reviews.length === 0 ? (
-    <div className="no-reviews-message">
-      <p>No previous reviews found</p>
-    </div>
-  ) : (
-    <div className="reviews-grid">
-      {reviews.map(review => (
-        <div key={review.booking_id} className="review-card">
-          <div className="review-info">
-            <h3 className="review-car-info">
-              {review.vehicle_make} {review.vehicle_model}
-            </h3>
-            <div className="review-rating">
-              {'★'.repeat(review.rating_stars)}{'☆'.repeat(5 - review.rating_stars)}
-            </div>
-            <div className="review-text">
-              <p>{review.review}</p>
-            </div>
-            <div className="review-date">
-              <span>Posted on: {review.date_published}</span>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  )}
+  <Container>
+    <Row className="mb-4">
+      <Col>
+        <h2 className="text-center">Previous Reviews</h2>
+      </Col>
+    </Row>
+    
+    {isLoadingReviews ? (
+      <Row className="justify-content-center">
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading your reviews...</span>
+        </Spinner>
+      </Row>
+    ) : reviewError ? (
+      <Alert variant="danger" className="text-center">
+        {reviewError}
+      </Alert>
+    ) : reviews.length === 0 ? (
+      <Alert variant="info" className="text-center">
+        No previous reviews found
+      </Alert>
+    ) : (
+      <Row xs={1} sm={2} md={3} className="g-4">
+        {reviews.map(review => (
+          <Col key={review.booking_id}>
+            <Card>
+              <Card.Body>
+                <div className="text-warning mb-2" style={{ fontSize: '1.2rem' }}>
+                  {'★'.repeat(review.rating)}
+                  {'☆'.repeat(5 - review.rating)}
+                </div>
+                <Card.Text>"{review.review_text}"</Card.Text>
+                <div className="text-muted mt-2">
+                  <small>Posted on: {review.published_date}</small>
+                  {review.modified_date && review.modified_date !== review.published_date && (
+                    <small> (Modified on: {review.modified_date})</small>
+                  )}
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    )}
+  </Container>
 </section>
         </main>
       )}

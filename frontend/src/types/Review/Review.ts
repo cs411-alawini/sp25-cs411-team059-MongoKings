@@ -3,9 +3,9 @@ interface Review {
     car_id?: number;
     vehicle_make?: string;
     vehicle_model?: string;
-    rating_stars: number;
-    review: string;
-    date_published: string;
-    date_modified: string;
+    rating: number;
+    review_text: string;
+    published_date: string;
+    modified_date: string;
   }
 export default Review;
