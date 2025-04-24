@@ -1,2 +1,4 @@
 node_modules/
 node_modules/react-dom/cjs/react-dom-test-utils.production.js
+backend/venv/
+backend/__pycache__/
