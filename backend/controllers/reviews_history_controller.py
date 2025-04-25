@@ -14,7 +14,7 @@ def get_user_reviews():
     cursor = connection.cursor()
     
     try:
-        # Query to get all reviews given by the customer
+
         cursor.execute("""
             SELECT 
                 rr.Booking_Id,
@@ -27,7 +27,7 @@ def get_user_reviews():
             JOIN 
                 Booking_Reservations br ON rr.Booking_Id = br.Booking_Id
             WHERE 
-                br.Customer_Id = 196856
+                br.Customer_Id = %s
             ORDER BY
                 rr.date_published DESC
         """, (customer_id,))
@@ -54,7 +54,8 @@ def get_user_reviews():
             "review_count": len(user_reviews),
             "reviews": user_reviews
         }), 200           
-    except Exception as e:
+    except ValueError as e:
+        print(e)
         return {"message": f"Failed to retrieve user reviews: {str(e)}"}, 500
     finally:
         cursor.close()
@@ -118,13 +119,13 @@ def get_car_reviews():
         connection.close()
 
 
-@reviews_blueprint.route("/reviews/user/add", methods=["POST"])
+@reviews_blueprint.route("/reviews/add", methods=["POST"])
 def add_user_review():
     data = request.get_json()
 
     if not data:
         return {"message": "Invalid input"}, 400
-    
+    print(data)
     booking_id = data.get("booking_id")
     rating = data.get("rating")
     review = data.get("review")
@@ -136,9 +137,8 @@ def add_user_review():
     cursor = connection.cursor()        
 
     try:
-        # Check if the booking exists
         cursor.execute("""
-            SELECT 1
+            SELECT *
             FROM Booking_Reservations
             WHERE Booking_Id = %s
         """, (booking_id,))
@@ -153,7 +153,7 @@ def add_user_review():
         # If review does not exist, insert it
 
         cursor.execute("""
-            SELECT 1
+            SELECT *
             FROM Rating_and_Reviews
             WHERE Booking_Id = %s
         """, (booking_id,))

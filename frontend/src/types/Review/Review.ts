@@ -1,10 +1,7 @@
 interface Review {
     booking_id: number;
-    car_id?: number;
-    vehicle_make?: string;
-    vehicle_model?: string;
     rating: number;
-    review: string;
+    review_text: string;
     published_date: string;
     modified_date: string;
   }

@@ -71,13 +71,16 @@ BEGIN
         LEFT JOIN 
             car_ratings_view_final r ON r.car_id = s.car_id
         WHERE 
-            SOUNDEX(s.State) = SOUNDEX(p_search_term)
+            SOUNDEX(s.City) = SOUNDEX(p_search_term)
+            OR SOUNDEX(s.State) = SOUNDEX(p_search_term)
             OR SOUNDEX(s.Vehicle_Type) = SOUNDEX(p_search_term)
             OR SOUNDEX(s.Car_Id) = SOUNDEX(p_search_term)
             OR SOUNDEX(s.Vehicle_Make) = SOUNDEX(p_search_term)
             OR SOUNDEX(s.Vehicle_model) = SOUNDEX(p_search_term)
             OR SOUNDEX(s.Fuel_Type) = SOUNDEX(p_search_term)
         ORDER BY Average_Rating DESC, Daily_Price;
+
+
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
 
@@ -99,11 +102,11 @@ BEGIN
         END IF;
 
         IF v_avg_rating > 5 THEN
+            SET v_rating_description = 'Perfect';
+        ELSEIF v_avg_rating > 3 OR Daily_Price > 40 THEN
             SET v_rating_description = 'Good';
-        ELSEIF v_avg_rating > 3 THEN
-            SET v_rating_description = 'Okay';
         ELSE
-            SET v_rating_description = 'Poor';
+            SET v_rating_description = 'Not suited';
         END IF;
 
         INSERT INTO final_results 
@@ -115,7 +118,7 @@ BEGIN
     CLOSE car_cursor;
 
 
-    SELECT * FROM final_results ORDER BY Daily_Price;
+    SELECT * FROM final_results ORDER BY Average_Rating DESC, Daily_Price;
     DROP TABLE IF EXISTS final_results;
 END //
 

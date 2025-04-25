@@ -5,6 +5,7 @@ import Login from "./pages/Login/Login";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import MainNavbar from "./pages/components/MainNavbar";
 import RentNowForm from "./pages/Dashboard/RentNowForm";
+import ReviewForm from "./pages/Dashboard/add_review_form";
 
 const login = "/login";
 const dashboard = "/dashboard";
@@ -40,10 +41,12 @@ function AppRouter() {
     }
   >
     <Route path={`car/:carId`} element={<RentNowForm />} />
+    <Route path = {`review/:booking_id`} element = {<ReviewForm />} />
     <Route index element={<Dashboard />} />
   </Route>
   <Route path={all} element={<Navigate to={login} />} />
 </Routes>
+
 
     </BrowserRouter>
   );

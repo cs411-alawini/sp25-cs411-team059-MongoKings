@@ -57,3 +57,26 @@ def get_user_bookings():
     finally:
         cursor.close()
         connection.close()
+
+@booking_history_blueprint.route("/booking/delete", methods=["POST"])
+def get_delete_booking():
+    data = request.get_json()
+    booking_id = data.get("booking_id")
+    if not booking_id:
+        return jsonify({"message": "Missing required parameter: booking_id"}), 400
+
+    connection = db.engine.raw_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute("""
+            DELETE FROM Booking_Reservations where Booking_Id = %s """, (booking_id,))
+        cursor.execute("""
+            DELETE FROM Rating_and_Reviews where Booking_Id = %s """, (booking_id,))
+        connection.commit()
+    except Exception as e:
+        return jsonify({"message": f"Failed to retrieve booking history: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        connection.close()
+    return jsonify({"message": "Booking deleted successfully"}), 200

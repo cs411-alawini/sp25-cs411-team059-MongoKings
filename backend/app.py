@@ -8,7 +8,7 @@ from controllers.auth_controller import auth_blueprint
 from controllers.car_controller import car_blueprint
 from controllers.search_bar_controller import search_bar_blueprint
 from controllers.booking_history_controller import booking_history_blueprint
-
+from controllers.reviews_history_controller import reviews_blueprint
 USER = "root"
 PASSWORD = os.environ.get("DB_PASSWORD")
 DATABASE_NAME = "MONGOKINGS"
@@ -43,5 +43,6 @@ def create_app():
     app.register_blueprint(car_blueprint)
     app.register_blueprint(search_bar_blueprint)
     app.register_blueprint(booking_history_blueprint)
+    app.register_blueprint(reviews_blueprint)
     db.init_app(app)
     return app

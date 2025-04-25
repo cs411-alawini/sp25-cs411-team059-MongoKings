@@ -27,6 +27,7 @@ const Dashboard = () => {
   const [bookingError, setBookingError] = useState<string | null>(null);
 
   const [reviews, setReviews] = useState<Review[]>([]);  // Add this for reviews
+  console.log({ reviews });
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
 
@@ -60,41 +61,41 @@ const Dashboard = () => {
 
   const fetchBookingHistory = async () => {
     // console.log("User in fetchBookingHistory:", user);
-      const response = await fetch(apiEndpoints.bookingHistory, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer_id: user?.customer_id
-        })
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setBookings(data.bookings || []);
-      } else {
-        const error = await response.json();
-        alert(error.message || "Failed to fetch booking history.");
-      }
+    const response = await fetch(apiEndpoints.bookingHistory, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customer_id: user?.customer_id
+      })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      setBookings(data.bookings || []);
+    } else {
+      const error = await response.json();
+      alert(error.message || "Failed to fetch booking history.");
+    }
   };
 
   const fetchReviews = async () => {
     if (!user?.customer_id) return;
-    
+
     setIsLoadingReviews(true);
     setReviewError(null);
-    
+
     try {
       const response = await fetch(`${apiEndpoints.reviews}?customer_id=${user.customer_id}`, {
         method: "GET",
-        headers: { 
+        headers: {
           "Content-Type": "application/json"
         }
       });
-      
+
       if (!response.ok) {
         throw new Error("Failed to fetch reviews");
       }
-      
+
       const data = await response.json();
       setReviews(data.reviews || []);
     } catch (err) {
@@ -105,42 +106,6 @@ const Dashboard = () => {
     }
   };
 
-  const getCarDetails = (carId: number) => {
-    return cars.find(car => car.Car_Id === carId) || null;
-  };
-
-
-  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSearchModalOpen(true);
-  };
-  const handleSearchClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    e.preventDefault();
-    setIsSearchModalOpen(true);
-  };
-
-  const handleApplyFilters = (filters: any) => {
-    console.log('Applied filters:', filters);
-    setShowResults(true);
-  };
-
-  const handleLogout = () => {
-    dispatch(logout());
-  };
-
-  const handleLoginButtonClick = () => {
-    setShowLoginPage(true);
-  };
-  // const handleDeleteBooking = (id) => {
-  //   setBookings(bookings.filter(booking => booking.id !== id));
-  // };
-
-  // const handleEditBooking = (id) => {
-  //   // Edit booking logic here
-  //   console.log(`Editing booking ${id}`);
-  // };
-
-  // When user state changes and we have a user, return to homepage
   useEffect(() => {
     if (user) {
       setShowLoginPage(false);
@@ -172,31 +137,69 @@ const Dashboard = () => {
     </div>
   );
 
-  const handleEditBooking = (bookingId: number, carId: string) => {
-    navigate(`/dashboard/car/${carId}/edit/${bookingId}`);
-  };
-
-  function handleDeleteBooking(id: number): void {
-    throw new Error("Function not implemented.");
-  }
-
   function onEdit(booking: any): void {
     const today = new Date();
     const startDate = new Date(booking.start_date);
     if (today >= startDate) {
       alert("You can't edit this booking because it has already started or is in the past.");
       return;
-  }
+    }
   }
 
-  function onDelete(booking: any): void {
+  async function onDelete(booking: any): Promise<void> {
     const today = new Date();
     const startDate = new Date(booking.start_date);
+
     if (today >= startDate) {
       alert("You can't edit this booking because it has already started or is in the past.");
       return;
+    }
+
+    try {
+      const response = await fetch(apiEndpoints.delete_booking, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ booking_id: booking.booking_id })
+      });
+
+      if (response.ok) {
+        alert(`Booking with ID ${booking.booking_id} has been successfully deleted.`);
+        fetchBookingHistory();
+        fetchReviews();
+      } else {
+        alert("Failed to delete the booking. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error deleting booking:", error);
+      alert("An error occurred while deleting the booking.");
+    }
   }
+
+async function onAddReview(booking: any, rating: number, review: string): Promise<void> {
+    try {
+      const response = await fetch(apiEndpoints.add_review, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          booking_id: booking.booking_id, 
+          rating: rating, 
+          review: review 
+        })
+      });
+      
+      if (response.ok) {
+        alert(`Booking with ID ${booking.booking_id} review has been added properly.`);
+        fetchReviews();
+      } else {
+        alert("Failed to add the review. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      alert("An error occurred while submitting the review");
+    }
   }
+
+
   return (
     <div className="app-container">
       {/* Main Content */}
@@ -226,10 +229,10 @@ const Dashboard = () => {
                   }}
                   >
                     {dropdownItems.map((item, index) => (
-                      <Dropdown.Item key={index} onClick={function() {
+                      <Dropdown.Item key={index} onClick={function () {
                         navigate(`/dashboard/car/${item.Car_Id}`); // Navigate to the car details page
-                      }}> 
-                      {/* We will add a on click handler here to navigate to the car details page */}
+                      }}>
+                        {/* We will add a on click handler here to navigate to the car details page */}
                         {item.Car_Id} - {item.Fuel_Type} - ${item.Daily_Price} - {item.Rating_Description}
                       </Dropdown.Item>
                     ))}
@@ -251,39 +254,14 @@ const Dashboard = () => {
 
 
 
-          {/* Popular in New York */}
+          {/* Popular Nearby*/}
           <section className="popular-section">
-            <h2>Popular in New York</h2>
+            <h2>Popular Nearby</h2>
             <div className="time-filters">
               <button
                 className={`time-filter ${activeTime === 'all' ? 'active-filter' : ''}`}
                 onClick={() => setActiveTime('all')}
               >
-                All
-              </button>
-              <button
-                className={`time-filter ${activeTime === 'today' ? 'active-filter' : ''}`}
-                onClick={() => setActiveTime('today')}
-              >
-                Today
-              </button>
-              <button
-                className={`time-filter ${activeTime === 'tomorrow' ? 'active-filter' : ''}`}
-                onClick={() => setActiveTime('tomorrow')}
-              >
-                Tomorrow
-              </button>
-              <button
-                className={`time-filter ${activeTime === 'this-week' ? 'active-filter' : ''}`}
-                onClick={() => setActiveTime('this-week')}
-              >
-                This week
-              </button>
-              <button
-                className={`time-filter ${activeTime === 'next-week' ? 'active-filter' : ''}`}
-                onClick={() => setActiveTime('next-week')}
-              >
-                Next week
               </button>
             </div>
             <div className="cars-grid">
@@ -295,130 +273,144 @@ const Dashboard = () => {
 
           {/* Previous Bookings Section */}
           <section className="previous-bookings-section">
-      <Container>
-        <Row className="mb-4">
-          <Col>
-            <h2 className="text-center">Previous Bookings</h2>
-          </Col>
-        </Row>
+            <Container>
+              <Row className="mb-4">
+                <Col>
+                  <h2 className="text-center">Previous Bookings</h2>
+                </Col>
+              </Row>
 
-        {isLoadingBookings ? (
-          <Row className="justify-content-center">
-            <Spinner animation="border" role="status">
-              <span className="visually-hidden">Loading your booking history...</span>
-            </Spinner>
-          </Row>
-        ) : bookingError ? (
-          <Alert variant="danger" className="text-center">
-            {bookingError}
-          </Alert>
-        ) : bookings.length === 0 ? (
-          <Alert variant="info" className="text-center">
-            No previous bookings found
-          </Alert>
-        ) : (
-          <Row xs={1} sm={2} md={3} className="g-4">
-            {bookings.map((booking) => (
-              <Col key={booking.booking_id}>
-                <Card>
-                  <Card.Body>
-                    <Card.Title>
-                      {booking.start_date} - {booking.end_date} (ID: {booking.car_id})
-                    </Card.Title>
+              {isLoadingBookings ? (
+                <Row className="justify-content-center">
+                  <Spinner animation="border" role="status">
+                    <span className="visually-hidden">Loading your booking history...</span>
+                  </Spinner>
+                </Row>
+              ) : bookingError ? (
+                <Alert variant="danger" className="text-center">
+                  {bookingError}
+                </Alert>
+              ) : bookings.length === 0 ? (
+                <Alert variant="info" className="text-center">
+                  No previous bookings found
+                </Alert>
+              ) : (
+                <Row xs={1} sm={2} md={3} className="g-4">
+                  {bookings.map((booking) => (
+                    <Col key={booking.booking_id}>
+                      <Card>
+                        <Card.Body>
+                          <Card.Title>
+                            {booking.start_date} - {booking.end_date} (ID: {booking.booking_id})
+                          </Card.Title>
 
-                    <div className="mb-2">
-                      <strong>Start Date:</strong> {booking.start_date}
-                    </div>
-                    <div className="mb-2">
-                      <strong>End Date:</strong> {booking.end_date}
-                    </div>
-                    <div className="mb-3">
-                      <strong>Total Amount:</strong> ${booking.payment}
-                    </div>
+                          <div className="mb-2">
+                            <strong>Start Date:</strong> {booking.start_date}
+                          </div>
+                          <div className="mb-2">
+                            <strong>End Date:</strong> {booking.end_date}
+                          </div>
+                          <div className="mb-3">
+                            <strong>Total Amount:</strong> ${booking.payment}
+                          </div>
 
-                    {booking.review && (
-                      <>
-                        <div className="mb-2 text-warning" style={{ fontSize: '1.2rem' }}>
-                          {'★'.repeat(booking.review.rating)}
-                          {'☆'.repeat(5 - booking.review.rating)}
-                        </div>
-                        <Card.Text>"{booking.review.review_text}"</Card.Text>
-                      </>
-                    )}
+                          <div className="d-flex justify-content-between mt-4">
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              onClick={() => onEdit(booking)}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outline-success"
+                              size="sm"
+                              onClick={() => navigate(`review/${booking.booking_id}`)}
+                            >
+                              <i className="bi bi-chat-left-text me-1"></i>  Add Review
+                            </Button>
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={() => onDelete(booking)}
+                            >
+                              Delete
+                            </Button>
+                          </div>
 
-                    <div className="d-flex justify-content-between mt-4">
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => onEdit(booking)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => onDelete(booking)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        )}
-      </Container>
-    </section>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
+              )}
+            </Container>
+          </section>
 
-{/* Previous Reviews Section */}
-<section className="previous-reviews-section">
-  <Container>
-    <Row className="mb-4">
-      <Col>
-        <h2 className="text-center">Previous Reviews</h2>
-      </Col>
-    </Row>
-    
-    {isLoadingReviews ? (
-      <Row className="justify-content-center">
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading your reviews...</span>
-        </Spinner>
-      </Row>
-    ) : reviewError ? (
-      <Alert variant="danger" className="text-center">
-        {reviewError}
-      </Alert>
-    ) : reviews.length === 0 ? (
-      <Alert variant="info" className="text-center">
-        No previous reviews found
-      </Alert>
-    ) : (
-      <Row xs={1} sm={2} md={3} className="g-4">
-        {reviews.map(review => (
-          <Col key={review.booking_id}>
-            <Card>
-              <Card.Body>
-                <div className="text-warning mb-2" style={{ fontSize: '1.2rem' }}>
-                  {'★'.repeat(review.rating)}
-                  {'☆'.repeat(5 - review.rating)}
-                </div>
-                <Card.Text>"{review.review}"</Card.Text>
-                <div className="text-muted mt-2">
-                  <small>Posted on: {review.published_date}</small>
-                  {review.modified_date && review.modified_date !== review.published_date && (
-                    <small> (Modified on: {review.modified_date})</small>
-                  )}
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
-      </Row>
-    )}
-  </Container>
-</section>
+          {/* Previous Reviews Section */}
+          <section className="previous-reviews-section py-5 bg-light">
+            <Container>
+              <Row className="mb-4">
+                <Col>
+                  <h2 className="text-center fw-bold">Previous Reviews</h2>
+                  <hr className="mx-auto" style={{ width: "60px", borderTop: "3px solid #ffc107" }} />
+                </Col>
+              </Row>
+
+              {isLoadingReviews ? (
+                <Row className="justify-content-center">
+                  <Col xs="auto">
+                    <Spinner animation="border" role="status" variant="warning">
+                      <span className="visually-hidden">Loading your reviews...</span>
+                    </Spinner>
+                  </Col>
+                </Row>
+              ) : reviewError ? (
+                <Row className="justify-content-center">
+                  <Col md={6}>
+                    <Alert variant="danger" className="text-center">
+                      {reviewError}
+                    </Alert>
+                  </Col>
+                </Row>
+              ) : reviews.length === 0 ? (
+                <Row className="justify-content-center">
+                  <Col md={6}>
+                    <Alert variant="info" className="text-center">
+                      No previous reviews found.
+                    </Alert>
+                  </Col>
+                </Row>
+              ) : (
+                <Row xs={1} sm={2} md={3} className="g-4">
+                  {reviews.map(review => (
+                    <Col key={review.booking_id}>
+                      <Card className="h-100 shadow-sm border-0">
+                        <Card.Body>
+                          <div className="text-warning mb-2" style={{ fontSize: '1.3rem' }}>
+                            {'★'.repeat(review.rating)}
+                            {'☆'.repeat(5 - review.rating)}
+                          </div>
+                          <Card.Text className="fst-italic">"{review.review_text}"</Card.Text>
+                        </Card.Body>
+                        <Card.Footer className="bg-transparent border-0 text-muted small">
+                          <div>Booking ID: <span className="fw-semibold">{review.booking_id}</span></div>
+                          <div>
+                            Posted on: {review.published_date}
+                            {review.modified_date && review.modified_date !== review.published_date && (
+                              <> (Modified on: {review.modified_date})</>
+                            )}
+                          </div>
+                        </Card.Footer>
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
+              )}
+            </Container>
+          </section>
+
+
         </main>
       )}
     </div>
@@ -426,3 +418,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
