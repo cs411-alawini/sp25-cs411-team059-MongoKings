@@ -57,11 +57,11 @@ def booking_summary():
                 FROM Booking_Reservations b 
                 WHERE b.Customer_Id = c.Customer_Id 
                   AND b.Car_Id = car.Car_Id 
-                  AND b.Booking_Duration >= 0)) AS Discount_Price 
+                  AND b.Booking_Duration >= 2)) AS Discount_Price 
     FROM Customer_Info c
     JOIN Car_Rental_Info car ON car.Car_Id = %s
     WHERE c.Customer_Id = %s
-      AND c.Number_of_Rentals >= 0;
+      AND c.Number_of_Rentals >= 2;
 """, (car_id, customer_id))  # ← parameters go here
 
         discount_result = cursor.fetchone()
@@ -79,7 +79,7 @@ def booking_summary():
                 FROM Car_Theft sub_ct 
                 WHERE cri.State = sub_ct.State 
                 GROUP BY sub_ct.State
-                HAVING AVG(sub_ct.Number_Thefts) > 25
+                HAVING AVG(sub_ct.Number_Thefts) > 250
             ), 0)
         ) + (
             SELECT id.Insurance_Val 

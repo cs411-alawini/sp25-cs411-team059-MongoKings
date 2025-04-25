@@ -144,6 +144,7 @@ const Dashboard = () => {
       alert("You can't edit this booking because it has already started or is in the past.");
       return;
     }
+    navigate(`edit/${booking.booking_id}`)
   }
 
   async function onDelete(booking: any): Promise<void> {
@@ -254,6 +255,8 @@ async function onAddReview(booking: any, rating: number, review: string): Promis
 
 
 
+     
+
           {/* Popular Nearby*/}
           <section className="popular-section">
             <h2>Popular Nearby</h2>
@@ -320,7 +323,7 @@ async function onAddReview(booking: any, rating: number, review: string): Promis
                               size="sm"
                               onClick={() => onEdit(booking)}
                             >
-                              Edit
+                              Edit Booking
                             </Button>
                             <Button
                               variant="outline-success"
@@ -334,7 +337,7 @@ async function onAddReview(booking: any, rating: number, review: string): Promis
                               size="sm"
                               onClick={() => onDelete(booking)}
                             >
-                              Delete
+                              Delete Booking
                             </Button>
                           </div>
 

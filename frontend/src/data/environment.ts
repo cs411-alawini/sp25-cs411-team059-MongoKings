@@ -6,10 +6,12 @@ const apiEndpoints = {
   bookingSummary: `${base_url}/booking/summary`,
   bookingConfirm: `${base_url}/booking/confirm`,
   search: `${base_url}/search/cars`,
-  bookingHistory: `${base_url}/booking/history`, // New endpoint added here
+  bookingHistory: `${base_url}/booking/history`, 
   reviews: `${base_url}/reviews/user`,
   delete_booking : `${base_url}/booking/delete`,
   add_review: `${base_url}/reviews/add`,
+  edit_booking: `${base_url}/booking/edit`,
+  edit_booking_confirm: `${base_url}/booking/edit-confirm`,
 };
 
 export default apiEndpoints;

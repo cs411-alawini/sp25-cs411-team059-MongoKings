@@ -148,9 +148,7 @@ def add_user_review():
         if not booking:
             return {"message": "Booking not found"}, 404    
         
-        # Check if the review already exists
-        # If review exists, update it
-        # If review does not exist, insert it
+
 
         cursor.execute("""
             SELECT *
@@ -161,14 +159,13 @@ def add_user_review():
         existing_review = cursor.fetchone()
 
         if existing_review:
-            # Update the review
             cursor.execute("""
                 UPDATE Rating_and_Reviews
                 SET rating = %s, review = %s, date_modified = NOW()
                 WHERE Booking_Id = %s
             """, (rating, review, booking_id))
         else:
-            # Insert the review
+
             cursor.execute("""
                 INSERT INTO Rating_and_Reviews (Booking_Id, rating, review, date_published)
                 VALUES (%s, %s, %s, NOW())

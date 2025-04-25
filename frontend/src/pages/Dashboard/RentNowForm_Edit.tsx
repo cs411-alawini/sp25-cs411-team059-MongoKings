@@ -6,15 +6,15 @@ import { useAppSelector } from "../../app/hooks";
 import { selectAuthUser } from "../../services/Auth/AuthSelectors";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 
-function RentNowForm() {
+function RentNowFormEdit() {
     const navigate = useNavigate();
-    const { carId } = useParams<{ carId: string }>();
+    const { booking_id } = useParams<{ booking_id: string }>();
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [summary, setSummary] = useState<any>(null);
     const user = useAppSelector(selectAuthUser);
 
-    if (!carId) {
+    if (!booking_id) {
         navigate(dashboard);
         return null;
     }
@@ -25,19 +25,19 @@ function RentNowForm() {
                 alert("Please log in to check availability.");
                 return;
             }
-            const response = await fetch(apiEndpoints.bookingSummary, {
+            console.log("Booking ID:", booking_id)
+            const response = await fetch(apiEndpoints.edit_booking, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    car_id: parseInt(carId),
+                    booking_id: parseInt(booking_id),
                     start_date: startDate,
                     end_date: endDate,
-                    customer_id: user.customer_id
                 })
             });
-    
+
             const result = await response.json();
-    
+
             if (response.ok) {
                 setSummary(result);
             } else {
@@ -51,30 +51,29 @@ function RentNowForm() {
     };
 
     const handleConfirmBooking = async () => {
-        const response = await fetch(apiEndpoints.bookingConfirm, {
+        const response = await fetch(apiEndpoints.edit_booking_confirm, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                car_id: parseInt(carId),
+                booking_id: parseInt(booking_id),
                 start_date: startDate,
                 end_date: endDate,
-                customer_id: user?.customer_id,
             })
         });
 
         if (response.ok) {
-            alert("Booking confirmed!");
+            alert("Booking modified!");
             navigate(dashboard);
         } else {
             const error = await response.json();
-            alert(error.message || "Booking failed.");
+            alert(error.message || "Booking could not be modified.");
         }
     };
 
     return (
         <Container className="mt-4">
-            <h1 className="mb-4">Rent Now - Car ID: {carId}</h1>
-    
+            <h1 className="mb-4"> Modify Booking: {booking_id}</h1>
+
             <Form>
                 <Row className="mb-3">
                     <Col md={6}>
@@ -98,12 +97,12 @@ function RentNowForm() {
                         </Form.Group>
                     </Col>
                 </Row>
-    
-                <Button variant="primary" onClick={handleCheckAvailability}>
+
+                <Button type="button" variant="primary" onClick={handleCheckAvailability}>
                     Check Availability & Price
                 </Button>
             </Form>
-    
+
             {summary && (
                 <Card className="mt-4">
                     <Card.Body>
@@ -120,11 +119,12 @@ function RentNowForm() {
                     </Card.Body>
                 </Card>
             )}
-    
+
             <Button variant="secondary" className="mt-3" onClick={() => navigate(dashboard)}>
                 Back to Dashboard
             </Button>
         </Container>
-    );}
+    );
+}
 
-export default RentNowForm;
+export default RentNowFormEdit;
