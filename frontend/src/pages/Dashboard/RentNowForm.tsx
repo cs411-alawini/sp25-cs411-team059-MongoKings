@@ -5,8 +5,8 @@ import apiEndpoints from "../../data/environment";
 import { useAppSelector } from "../../app/hooks";
 import { selectAuthUser } from "../../services/Auth/AuthSelectors";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
-import Review from "../../types/Review/Review";
 import Car from "../../types/Car/Car";
+import Review from "../../types/Review/Review";
 
 function RentNowForm() {
     const navigate = useNavigate();
@@ -21,16 +21,6 @@ function RentNowForm() {
     const [carDetails, setCarDetails] = useState<Car | null>(null);
 
     useEffect(() => {
-        // Fetch car details
-        fetch(`${apiEndpoints.car}/${carId}`)
-          .then(response => response.json())
-          .then(data => {
-            setCarDetails(data);
-          })
-          .catch(error => {
-            console.error("Error fetching car details:", error);
-          });
-        
         setReviewsLoading(true);
         fetch(`${apiEndpoints.reviewsByCar}?car_id=${carId}`)
           .then(async res => {
@@ -114,16 +104,10 @@ function RentNowForm() {
     return (
         <Container className="mt-4">
             <h1 className="mb-4">Rent Now - Car ID: {carId}</h1>
-    
-            {carDetails && (
-                <Card className="mb-4">
-                    <Card.Body>
-                        <Card.Title>{carDetails.Vehicle_Make} {carDetails.Vehicle_Model}</Card.Title>
-                        <Card.Text>Daily Price: ${carDetails.Daily_Price}</Card.Text>
-                        <Card.Text>Previous Trips: {carDetails.Number_of_trips || 0}</Card.Text>
-                    </Card.Body>
-                </Card>
-            )}
+            <div className="car-details">
+                <h3>{carDetails?.Vehicle_Model} {carDetails?.Vehicle_Make}</h3>
+                <p>{carDetails?.State} {carDetails?.Number_of_trips ? `- ${carDetails?.Daily_Price}` : ''}</p>
+            </div>
     
             <Form>
                 <Row className="mb-3">
@@ -186,7 +170,7 @@ function RentNowForm() {
                   <Card.Title>{r.rating} / 5 stars</Card.Title>
                   <Card.Text>{r.review_text}</Card.Text>
                   <Card.Subtitle className="text-muted">
-                  {r.published_date.slice(0, 10)}
+                    {new Date(r.published_date).toLocaleDateString()}
                   </Card.Subtitle>
                 </Card.Body>
               </Card>
