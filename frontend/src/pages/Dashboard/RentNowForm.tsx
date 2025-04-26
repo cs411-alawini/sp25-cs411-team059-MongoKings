@@ -164,7 +164,7 @@ function RentNowForm() {
                   <Card.Title>{r.rating} / 5 stars</Card.Title>
                   <Card.Text>{r.review_text}</Card.Text>
                   <Card.Subtitle className="text-muted">
-                    {new Date(r.published_date).toLocaleDateString()}
+                  {r.published_date.slice(0, 10)}
                   </Card.Subtitle>
                 </Card.Body>
               </Card>
