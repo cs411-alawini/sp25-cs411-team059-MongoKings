@@ -181,5 +181,39 @@ def add_user_review():
         cursor.close()
         connection.close()
     
+@reviews_blueprint.route("/reviews/delete", methods=["POST"])
+def delete_review():
+    data = request.get_json()
+    booking_id = data.get("booking_id")
     
+    if not booking_id:
+        return {"message": "Missing required parameter: booking_id"}, 400
+        
+    connection = db.engine.raw_connection()
+    cursor = connection.cursor()
     
+    try:
+        # Check if review exists
+        cursor.execute("""
+            SELECT * FROM Rating_and_Reviews 
+            WHERE Booking_Id = %s
+        """, (booking_id,))
+        
+        if not cursor.fetchone():
+            return {"message": "Review not found"}, 404
+            
+        # Delete the review
+        cursor.execute("""
+            DELETE FROM Rating_and_Reviews 
+            WHERE Booking_Id = %s
+        """, (booking_id,))
+        
+        connection.commit()
+        return {"message": "Review deleted successfully"}, 200
+        
+    except Exception as e:
+        connection.rollback()
+        return {"message": f"Failed to delete review: {str(e)}"}, 500
+    finally:
+        cursor.close()
+        connection.close()

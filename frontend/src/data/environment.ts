@@ -12,6 +12,7 @@ const apiEndpoints = {
   add_review: `${base_url}/reviews/add`,
   edit_booking: `${base_url}/booking/edit`,
   edit_booking_confirm: `${base_url}/booking/edit-confirm`,
+  delete_review: `${base_url}/reviews/delete`
 };
 
 export default apiEndpoints;

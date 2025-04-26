@@ -200,6 +200,28 @@ async function onAddReview(booking: any, rating: number, review: string): Promis
     }
   }
 
+// Add this function to handle review deletion
+async function onDeleteReview(review: Review): Promise<void> {
+  try {
+    const response = await fetch(apiEndpoints.delete_review, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ booking_id: review.booking_id })
+    });
+    
+    if (response.ok) {
+      alert(`Review for booking ID ${review.booking_id} has been successfully deleted.`);
+      // Refresh the reviews list
+      fetchReviews();
+    } else {
+      alert("Failed to delete the review. Please try again.");
+    }
+  } catch (error) {
+    console.error("Error deleting review:", error);
+    alert("An error occurred while deleting the review.");
+  }
+}
+
 
   return (
     <div className="app-container">
@@ -397,12 +419,23 @@ async function onAddReview(booking: any, rating: number, review: string): Promis
                           <Card.Text className="fst-italic">"{review.review_text}"</Card.Text>
                         </Card.Body>
                         <Card.Footer className="bg-transparent border-0 text-muted small">
-                          <div>Booking ID: <span className="fw-semibold">{review.booking_id}</span></div>
-                          <div>
-                            Posted on: {review.published_date}
-                            {review.modified_date && review.modified_date !== review.published_date && (
-                              <> (Modified on: {review.modified_date})</>
-                            )}
+                          <div className="d-flex justify-content-between align-items-center">
+                            <div>
+                              <div>Booking ID: <span className="fw-semibold">{review.booking_id}</span></div>
+                              <div>
+                                Posted on: {review.published_date}
+                                {review.modified_date && review.modified_date !== review.published_date && (
+                                  <> (Modified on: {review.modified_date})</>
+                                )}
+                              </div>
+                            </div>
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={() => onDeleteReview(review)}
+                            >
+                              <i className="bi bi-trash me-1"></i> Delete
+                            </Button>
                           </div>
                         </Card.Footer>
                       </Card>
