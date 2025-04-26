@@ -73,6 +73,7 @@ def get_delete_booking():
             DELETE FROM Booking_Reservations where Booking_Id = %s """, (booking_id,))
         cursor.execute("""
             DELETE FROM Rating_and_Reviews where Booking_Id = %s """, (booking_id,))
+            # If we delete the booking, we also delete the asosciated reviews,
         connection.commit()
     except Exception as e:
         return jsonify({"message": f"Failed to retrieve booking history: {str(e)}"}), 500
