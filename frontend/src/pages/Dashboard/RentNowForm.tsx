@@ -6,6 +6,7 @@ import { useAppSelector } from "../../app/hooks";
 import { selectAuthUser } from "../../services/Auth/AuthSelectors";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import Review from "../../types/Review/Review";
+import Car from "../../types/Car/Car";
 
 function RentNowForm() {
     const navigate = useNavigate();
@@ -17,8 +18,19 @@ function RentNowForm() {
     const [carReviews,     setCarReviews]    = useState<Review[]>([]);
     const [reviewsLoading, setReviewsLoading] = useState(false);
     const [reviewsError,   setReviewsError]   = useState<string | null>(null);
+    const [carDetails, setCarDetails] = useState<Car | null>(null);
 
     useEffect(() => {
+        // Fetch car details
+        fetch(`${apiEndpoints.car}/${carId}`)
+          .then(response => response.json())
+          .then(data => {
+            setCarDetails(data);
+          })
+          .catch(error => {
+            console.error("Error fetching car details:", error);
+          });
+        
         setReviewsLoading(true);
         fetch(`${apiEndpoints.reviewsByCar}?car_id=${carId}`)
           .then(async res => {
@@ -102,6 +114,16 @@ function RentNowForm() {
     return (
         <Container className="mt-4">
             <h1 className="mb-4">Rent Now - Car ID: {carId}</h1>
+    
+            {carDetails && (
+                <Card className="mb-4">
+                    <Card.Body>
+                        <Card.Title>{carDetails.Vehicle_Make} {carDetails.Vehicle_Model}</Card.Title>
+                        <Card.Text>Daily Price: ${carDetails.Daily_Price}</Card.Text>
+                        <Card.Text>Previous Trips: {carDetails.Number_of_trips || 0}</Card.Text>
+                    </Card.Body>
+                </Card>
+            )}
     
             <Form>
                 <Row className="mb-3">
