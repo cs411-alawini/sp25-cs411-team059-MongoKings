@@ -15,33 +15,33 @@ function RentNowForm() {
     const [endDate, setEndDate] = useState("");
     const [summary, setSummary] = useState<any>(null);
     const user = useAppSelector(selectAuthUser);
-    const [carReviews,     setCarReviews]    = useState<Review[]>([]);
+    const [carReviews, setCarReviews] = useState<Review[]>([]);
     const [reviewsLoading, setReviewsLoading] = useState(false);
-    const [reviewsError,   setReviewsError]   = useState<string | null>(null);
+    const [reviewsError, setReviewsError] = useState<string | null>(null);
     const [carDetails, setCarDetails] = useState<Car | null>(null);
 
     useEffect(() => {
         setReviewsLoading(true);
         fetch(`${apiEndpoints.reviewsByCar}?car_id=${carId}`)
-          .then(async res => {
-            if (res.status === 404) {
-              // no reviews yet
-              setCarReviews([]);
-              return null;
-            }
-            if (!res.ok) {
-              throw new Error(res.statusText);
-            }
-            return res.json();
-          })
-          .then(data => {
-            if (data?.reviews) setCarReviews(data.reviews);
-          })
-          .catch(() => {
-            // only show on real errors
-            setReviewsError("Failed to load reviews");
-          })
-         .finally(() => setReviewsLoading(false));
+            .then(async res => {
+                if (res.status === 404) {
+                    // no reviews yet
+                    setCarReviews([]);
+                    return null;
+                }
+                if (!res.ok) {
+                    throw new Error(res.statusText);
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data?.reviews) setCarReviews(data.reviews);
+            })
+            .catch(() => {
+                // only show on real errors
+                setReviewsError("Failed to load reviews");
+            })
+            .finally(() => setReviewsLoading(false));
     }, [carId]);
 
     if (!carId) {
@@ -65,9 +65,9 @@ function RentNowForm() {
                     customer_id: user.customer_id
                 })
             });
-    
+
             const result = await response.json();
-    
+
             if (response.ok) {
                 setSummary(result);
             } else {
@@ -108,7 +108,7 @@ function RentNowForm() {
                 <h3>{carDetails?.Vehicle_Model} {carDetails?.Vehicle_Make}</h3>
                 <p>{carDetails?.State} {carDetails?.Number_of_trips ? `- ${carDetails?.Daily_Price}` : ''}</p>
             </div>
-    
+
             <Form>
                 <Row className="mb-3">
                     <Col md={6}>
@@ -132,12 +132,12 @@ function RentNowForm() {
                         </Form.Group>
                     </Col>
                 </Row>
-    
+
                 <Button variant="primary" onClick={handleCheckAvailability}>
                     Check Availability & Price
                 </Button>
             </Form>
-    
+
             {summary && (
                 <Card className="mt-4">
                     <Card.Body>
@@ -158,28 +158,29 @@ function RentNowForm() {
             <h4 className="mt-4">Customer Reviews</h4>
 
             {reviewsLoading && <p>Loading reviews…</p>}
-            {reviewsError   && <p className="text-danger">Error: {reviewsError}</p>}
+            {reviewsError && <p className="text-danger">Error: {reviewsError}</p>}
 
             {(!reviewsLoading && !reviewsError && carReviews.length === 0) && (
-              <p>No reviews for this car yet.</p>
+                <p>No reviews for this car yet.</p>
             )}
 
             {carReviews.map(r => (
-              <Card key={r.booking_id} className="mb-3">
-                <Card.Body>
-                  <Card.Title>{r.rating} / 5 stars</Card.Title>
-                  <Card.Text>{r.review_text}</Card.Text>
-                  <Card.Subtitle className="text-muted">
-                    {new Date(r.published_date).toLocaleDateString()}
-                  </Card.Subtitle>
-                </Card.Body>
-              </Card>
+                <Card key={r.booking_id} className="mb-3">
+                    <Card.Body>
+                        <Card.Title>{r.rating} / 5 stars</Card.Title>
+                        <Card.Text>{r.review_text}</Card.Text>
+                        <Card.Subtitle className="text-muted">
+                            {r.published_date.slice(0, 10)}
+                        </Card.Subtitle>
+                    </Card.Body>
+                </Card>
             ))}
-    
+
             <Button variant="secondary" className="mt-3" onClick={() => navigate(dashboard)}>
                 Back to Dashboard
             </Button>
         </Container>
-    );}
+    );
+}
 
 export default RentNowForm;

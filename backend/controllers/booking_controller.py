@@ -4,8 +4,10 @@ import random
 from flask import session
 
 
-booking_blueprint = Blueprint("booking", __name__)
+# Here, we are using isolation level as serializable to prevent phantom reads, as over here, we can have a customer add a booking for particular dates and we want to prevent a other customer for booking for similar dates, we use a serializable isolation level to ensure that the transaction is isolated from other transactions until it is committed.
 
+booking_blueprint = Blueprint("booking", __name__)
+=
 @booking_blueprint.route("/booking/summary", methods=["POST"])
 def booking_summary():
     connection = db.engine.raw_connection()
