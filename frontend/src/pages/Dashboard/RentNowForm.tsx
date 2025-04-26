@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { dashboard } from "../../routes";
 import apiEndpoints from "../../data/environment";
 import { useAppSelector } from "../../app/hooks";
 import { selectAuthUser } from "../../services/Auth/AuthSelectors";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import Review from "../../types/Review/Review";
 
 function RentNowForm() {
     const navigate = useNavigate();
@@ -13,6 +14,33 @@ function RentNowForm() {
     const [endDate, setEndDate] = useState("");
     const [summary, setSummary] = useState<any>(null);
     const user = useAppSelector(selectAuthUser);
+    const [carReviews,     setCarReviews]    = useState<Review[]>([]);
+    const [reviewsLoading, setReviewsLoading] = useState(false);
+    const [reviewsError,   setReviewsError]   = useState<string | null>(null);
+
+    useEffect(() => {
+        setReviewsLoading(true);
+        fetch(`${apiEndpoints.reviewsByCar}?car_id=${carId}`)
+          .then(async res => {
+            if (res.status === 404) {
+              // no reviews yet
+              setCarReviews([]);
+              return null;
+            }
+            if (!res.ok) {
+              throw new Error(res.statusText);
+            }
+            return res.json();
+          })
+          .then(data => {
+            if (data?.reviews) setCarReviews(data.reviews);
+          })
+          .catch(() => {
+            // only show on real errors
+            setReviewsError("Failed to load reviews");
+          })
+         .finally(() => setReviewsLoading(false));
+    }, [carId]);
 
     if (!carId) {
         navigate(dashboard);
@@ -120,6 +148,27 @@ function RentNowForm() {
                     </Card.Body>
                 </Card>
             )}
+
+            <h4 className="mt-4">Customer Reviews</h4>
+
+            {reviewsLoading && <p>Loading reviews…</p>}
+            {reviewsError   && <p className="text-danger">Error: {reviewsError}</p>}
+
+            {(!reviewsLoading && !reviewsError && carReviews.length === 0) && (
+              <p>No reviews for this car yet.</p>
+            )}
+
+            {carReviews.map(r => (
+              <Card key={r.booking_id} className="mb-3">
+                <Card.Body>
+                  <Card.Title>{r.rating} / 5 stars</Card.Title>
+                  <Card.Text>{r.review_text}</Card.Text>
+                  <Card.Subtitle className="text-muted">
+                    {new Date(r.published_date).toLocaleDateString()}
+                  </Card.Subtitle>
+                </Card.Body>
+              </Card>
+            ))}
     
             <Button variant="secondary" className="mt-3" onClick={() => navigate(dashboard)}>
                 Back to Dashboard
