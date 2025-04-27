@@ -1,8 +1,9 @@
 
 --  If the rental_count is greater than  1
+-- This is our main trigger
 DELIMITER //
-CREATE TRIGGER increase_price
-AFTER INSERT ON Booking_Reservations
+Create Trigger increase_price
+after INSERT on Booking_Reservations
 FOR EACH ROW
 BEGIN
     DECLARE rental_count INT;

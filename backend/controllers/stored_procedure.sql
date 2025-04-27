@@ -1,3 +1,5 @@
+-- Here, have created a stored procedure 
+
 CREATE VIEW car_ratings_view_final AS
 SELECT
     cri.Car_Id,

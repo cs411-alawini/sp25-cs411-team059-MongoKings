@@ -28,7 +28,7 @@ def booking_summary():
 
 
 
-    cursor.execute("SELECT DATEDIFF(%s, %s)", (end_date, start_date))
+    cursor.execute("select DATEDIFF(%s, %s)", (end_date, start_date))
     booking_duration = cursor.fetchone()
     if not booking_duration or booking_duration[0] <= 0:
         print(booking_duration[0])
@@ -37,8 +37,8 @@ def booking_summary():
     duration = booking_duration[0]
 
     cursor.execute("""
-            SELECT 1 FROM Booking_Reservations
-            WHERE Car_Id = %s AND NOT (
+            select * from Booking_Reservations
+            where Car_Id = %s and not (
                 end_date < %s OR start_date> %s
             )
         """, (car_id, start_date, end_date))
@@ -46,42 +46,49 @@ def booking_summary():
         connection.rollback()
         return {"message": "Car is not available for the selected dates"}, 409
     try:
-        cursor.execute("START TRANSACTION")
+        cursor.execute("start TRANSACTION")
 
         print(duration, car_id, customer_id)
 
 
         cursor.execute("""
-    SELECT  
+    select 
         car.Daily_Price * (
             1 - 0.09 * EXISTS (
-                SELECT 1 
-                FROM Booking_Reservations b 
-                WHERE b.Customer_Id = c.Customer_Id 
-                  AND b.Car_Id = car.Car_Id 
-                  AND b.Booking_Duration >= 2)) AS Discount_Price 
-    FROM Customer_Info c
-    JOIN Car_Rental_Info car ON car.Car_Id = %s
-    WHERE c.Customer_Id = %s
-      AND c.Number_of_Rentals >= 2;
-""", (car_id, customer_id))  # ← parameters go here
+                select 1
+                from Booking_Reservations b 
+                where b.Customer_Id = c.Customer_Id 
+                    and b.Car_Id = car.Car_Id 
+                    and b.Booking_Duration >= 2)) AS Discount_Price 
+    from Customer_Info c
+    join Car_Rental_Info car ON car.Car_Id = %s
+    where c.Customer_Id = %s
+    and c.Number_of_Rentals >= 2;
+""", (car_id, customer_id))
 
         discount_result = cursor.fetchone()
         print(discount_result)
         cursor.execute("""
-    SELECT 
+    select
         ci.Name AS Customer_Name, 
         ci.Customer_Id, 
         cri.State, 
         (%s * %s) AS Rental_Cost,
+        (100 * COALESCE((
+                select 1
+                from Car_Theft sub_ct 
+                where cri.State = sub_ct.State 
+                group by sub_ct.State
+                having AVG(sub_ct.Number_Thefts) > 250
+            ), 0)) as Theft_Insurance,
         (
             (%s * %s) + 
             100 * COALESCE((
-                SELECT 1 
-                FROM Car_Theft sub_ct 
-                WHERE cri.State = sub_ct.State 
-                GROUP BY sub_ct.State
-                HAVING AVG(sub_ct.Number_Thefts) > 250
+                select 1
+                from Car_Theft sub_ct 
+                where cri.State = sub_ct.State 
+                group by sub_ct.State
+                having AVG(sub_ct.Number_Thefts) > 250
             ), 0)
         ) + (
             SELECT id.Insurance_Val 
@@ -110,8 +117,8 @@ def booking_summary():
         if confirm:
             booking_id = None
             for _ in range(20):
-                temp_id = random.randint(100000, 999999)  # You can adjust the range
-                cursor.execute("SELECT 1 FROM Booking_Reservations WHERE Booking_Id = %s", (temp_id,))
+                temp_id = random.randint(100000, 999999)
+                cursor.execute("select * from Booking_Reservations where Booking_Id = %s", (temp_id,))
                 if not cursor.fetchone():
                     booking_id = temp_id
                     break
@@ -121,9 +128,9 @@ def booking_summary():
                 return {"message": "Unable to generate a unique Booking ID"}, 500
 
             cursor.execute("""
-                INSERT INTO Booking_Reservations 
+                insert into Booking_Reservations 
                     (Booking_Id, Customer_Id, Car_Id, start_date, end_date, Booking_Duration, Payment)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                values (%s, %s, %s, %s, %s, %s, %s)
             """, (
                 booking_id,
                 customer_id,
@@ -131,17 +138,20 @@ def booking_summary():
                 start_date,
                 end_date,
                 duration,
-                total_result[4]  # Total_Payment
+                total_result[5]
             ))
         connection.commit()
 
         return jsonify({
-    # "message": "Booking confirmed!",
+
     "customer_name": total_result[0],
     "customer_id": total_result[1],
-    "total_payment": float(total_result[4]),
-    "insurance_val": float(total_result[5]),
-    "discount_price": float(discount_result[0]) if discount_result else None
+    "total_payment": float(total_result[5]),
+    "insurance_val": float(total_result[6]),
+    "theft_insurance": float(total_result[4]),
+    "discount_price": float(discount_result[0]) if discount_result else None, 
+    "car_id": car_id,
+    "booking_id": booking_id if confirm else None,
 }), 200
 
     except Exception as e:

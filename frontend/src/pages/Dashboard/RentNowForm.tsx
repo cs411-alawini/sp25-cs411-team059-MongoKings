@@ -75,6 +75,7 @@ function RentNowForm() {
                 alert(result.message || "Booking check failed.");
             }
         } catch (err) {
+            console.log(err)
             console.error("Fetch error:", err);
             alert("An unexpected error occurred. Check console for details.");
         }
@@ -93,7 +94,7 @@ function RentNowForm() {
         });
 
         if (response.ok) {
-            alert("Booking confirmed!");
+            alert("`Booking confirmed!");
             navigate(dashboard);
         } else {
             const error = await response.json();
@@ -143,11 +144,13 @@ function RentNowForm() {
                     <Card.Body>
                         <Card.Title>Summary</Card.Title>
                         <Card.Text>Customer: {summary.customer_name}</Card.Text>
-                        <Card.Text>Total Payment: ${summary.total_payment}</Card.Text>
+                        <Card.Text>Car_Id: {summary.car_id}</Card.Text>
+                        <Card.Text>Theft_Insurance: {summary.theft_insurance}</Card.Text>
                         <Card.Text>Insurance: ${summary.insurance_val}</Card.Text>
                         {summary.discount_price && (
                             <Card.Text>Discounted Daily Rate: ${summary.discount_price}</Card.Text>
                         )}
+                        <Card.Text>Total Payment: ${summary.total_payment}</Card.Text>
                         <Button variant="success" onClick={handleConfirmBooking}>
                             Confirm Booking
                         </Button>

@@ -34,7 +34,7 @@ function CarCard(car: Car) {
             </div>
             <div className="car-card-details">
                 <h3>{car.Vehicle_Model} {car.Vehicle_Make}</h3>
-                <p>{car.State} {car.Number_of_trips ? `- ${car.Daily_Price}` : ''}</p>
+                <p>{car.State} {car.Number_of_trips ? `- $${car.Daily_Price}` : ''}</p>
                 <button className="rent-button" onClick={() => onClick(car.Car_Id)}
                 >Rent now</button>
             </div>
