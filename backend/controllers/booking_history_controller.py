@@ -142,11 +142,10 @@ def booking_edit_summary():
                 FROM Booking_Reservations b 
                 WHERE b.Customer_Id = c.Customer_Id 
                     AND b.Car_Id = car.Car_Id 
-                    AND b.Booking_Duration >= 2)) AS Discount_Price 
+                    AND b.Booking_Duration >= 5)) AS Discount_Price 
                 FROM Customer_Info c
                 JOIN Car_Rental_Info car ON car.Car_Id = %s
-                WHERE c.Customer_Id = %s
-                AND c.Number_of_Rentals >= 2;
+                WHERE c.Customer_Id = %s;
             """, (car_id, customer_id))
         discount_result = cursor.fetchone()
 

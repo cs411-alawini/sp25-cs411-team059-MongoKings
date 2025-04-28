@@ -59,11 +59,10 @@ def booking_summary():
                 from Booking_Reservations b 
                 where b.Customer_Id = c.Customer_Id 
                     and b.Car_Id = car.Car_Id 
-                    and b.Booking_Duration >= 2)) AS Discount_Price 
+                    and b.Booking_Duration >= 5)) AS Discount_Price 
     from Customer_Info c
     join Car_Rental_Info car ON car.Car_Id = %s
-    where c.Customer_Id = %s
-    and c.Number_of_Rentals >= 2;
+    where c.Customer_Id = %s;
 """, (car_id, customer_id))
 
         discount_result = cursor.fetchone()
