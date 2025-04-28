@@ -2,10 +2,7 @@ from extensions import db
 from flask import Blueprint, request, jsonify
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import text
-
-
 auth_blueprint = Blueprint("auth", __name__)
-
 import random
 
 @auth_blueprint.route("/register", methods=["POST"])
