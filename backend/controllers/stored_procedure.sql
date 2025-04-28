@@ -1,4 +1,4 @@
--- Here, have created a stored procedure 
+-- Here, have created a stored procedure to integrate and work with the search results which depdend on the ratings of the cars and only show the cars that have not been booked for the next 30 days.
 
 CREATE VIEW car_ratings_view_final AS
 SELECT
@@ -54,12 +54,12 @@ CREATE PROCEDURE SearchCarsWithRating_final_check(
 )
 BEGIN
     DECLARE done INT DEFAULT FALSE;
-    DECLARE v_state VARCHAR(255);
-    DECLARE v_car_id VARCHAR(255);
-    DECLARE v_daily_price DECIMAL(10);
-    DECLARE v_fuel_type VARCHAR(50);
-    DECLARE v_avg_rating DECIMAL(10);
-    DECLARE v_rating_description VARCHAR(255);
+    DECLARE state_val VARCHAR(255);
+    DECLARE car_id_val VARCHAR(255);
+    DECLARE daily_price_val DECIMAL(10);
+    DECLARE fuel_type_val VARCHAR(50);
+    DECLARE avg_rating_val DECIMAL(10);
+    DECLARE rating_description_val VARCHAR(255);
 
     DECLARE car_cursor CURSOR FOR
         SELECT 
@@ -98,23 +98,23 @@ BEGIN
     OPEN car_cursor;
 
     read_loop: LOOP
-        FETCH car_cursor INTO  v_state, v_car_id, v_daily_price, v_fuel_type, v_avg_rating;
+        FETCH car_cursor INTO  state_val, car_id_val, daily_price_val, fuel_type_val, avg_rating_val;
         IF done THEN
             LEAVE read_loop;
         END IF;
 
-        IF v_avg_rating > 5 THEN
-            SET v_rating_description = 'Perfect';
-        ELSEIF v_avg_rating > 3 OR Daily_Price > 40 THEN
-            SET v_rating_description = 'Good';
+        IF avg_rating_val > 5 THEN
+            SET rating_description_val = 'Perfect';
+        ELSEIF avg_rating_val > 3 THEN
+            SET rating_description_val = 'Good';
         ELSE
-            SET v_rating_description = 'Not suited';
+            SET rating_description_val = 'Not suited';
         END IF;
 
         INSERT INTO final_results 
             (State_name, Car_Id, Daily_Price, Fuel_Type, Average_Rating, Rating_Description)
         VALUES 
-            (v_state, v_car_id, v_daily_price, v_fuel_type, v_avg_rating, v_rating_description);
+            (state_val, car_id_val, daily_price_val, fuel_type_val, avg_rating_val, rating_description_val);
     END LOOP;
 
     CLOSE car_cursor;
