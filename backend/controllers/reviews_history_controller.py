@@ -4,7 +4,6 @@ from extensions import db
 reviews_blueprint = Blueprint("reviews", __name__)
 @reviews_blueprint.route("/reviews/user", methods=["GET"])
 def get_user_reviews():
-    # Get customer_id from request parameters
     customer_id = request.args.get("customer_id")
     
     if not customer_id:
@@ -31,14 +30,13 @@ def get_user_reviews():
             ORDER BY
                 rr.date_published DESC
         """, (customer_id,))
-        
-        # Fetch all reviews
+
         reviews = cursor.fetchall()
         
         if not reviews:
             return {"message": "No reviews found for this customer"}, 404
         
-        # Format the response
+
         user_reviews = []
         for review in reviews:
             user_reviews.append({
@@ -72,7 +70,7 @@ def get_car_reviews():
     cursor = connection.cursor()
 
     try:
-        # Query to get all reviews for the car
+
         cursor.execute("""
             SELECT
                 rr.Booking_Id,
@@ -90,13 +88,11 @@ def get_car_reviews():
                 rr.date_published DESC  
         """, (car_id,))
 
-        # Fetch all reviews
         reviews = cursor.fetchall() 
 
         if not reviews:
             return {"message": "No reviews found for this car"}, 404
         
-        # Format the response
         car_reviews = []
         for review in reviews:
             car_reviews.append({
@@ -193,7 +189,6 @@ def delete_review():
     cursor = connection.cursor()
     
     try:
-        # Check if review exists
         cursor.execute("""
             SELECT * FROM Rating_and_Reviews 
             WHERE Booking_Id = %s
@@ -202,7 +197,6 @@ def delete_review():
         if not cursor.fetchone():
             return {"message": "Review not found"}, 404
             
-        # Delete the review
         cursor.execute("""
             DELETE FROM Rating_and_Reviews 
             WHERE Booking_Id = %s

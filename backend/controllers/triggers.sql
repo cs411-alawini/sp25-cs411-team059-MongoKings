@@ -1,5 +1,5 @@
 
---  If the rental_count is greater than  1
+--  If the rental_count is greater than 2, for a particuar car, we increase the daily price by 1%, each time a new booking is made for that car.
 -- This is our main trigger
 DELIMITER //
 Create Trigger increase_price

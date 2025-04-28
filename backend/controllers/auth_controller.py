@@ -23,7 +23,7 @@ def register_customer():
         if not all([name, phone, state, age]):
             return {"message": "Missing required fields"}, 400
 
-        # Generate a unique customer ID
+
         max_attempts = 20
         customer_id = None
         for _ in range(max_attempts):
@@ -39,7 +39,6 @@ def register_customer():
         if not customer_id:
             return {"message": "Could not generate unique Customer ID"}, 500
 
-        # Insert the new customer
         db.session.execute(
             text("""
                 INSERT INTO Customer_Info

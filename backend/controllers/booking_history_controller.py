@@ -83,6 +83,9 @@ def get_delete_booking():
     return jsonify({"message": "Booking deleted successfully"}), 200
 
 
+
+# Heere the edit booking is copy of the booking_controller with few changes
+
 @booking_history_blueprint.route("/booking/edit", methods=["POST"])
 def booking_edit_summary():
     connection = db.engine.raw_connection()
@@ -194,7 +197,7 @@ def booking_edit_summary():
                 new_start,
                 new_end,
                 duration,
-                total_result[4],  # Total_Payment
+                total_result[4],  
                 booking_id
             ))
 
