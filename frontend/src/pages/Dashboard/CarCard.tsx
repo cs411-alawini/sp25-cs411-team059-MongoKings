@@ -30,7 +30,6 @@ function CarCard(car: Car) {
         <div key={car.Car_Id} className="car-card">
             <div className="car-card-image">
                 <img src={carImage} alt={`${car.Vehicle_Make} ${car.Vehicle_Model}`} />
-                <button className="view-button">View</button>
             </div>
             <div className="car-card-details">
                 <h3>{car.Vehicle_Model} {car.Vehicle_Make}</h3>

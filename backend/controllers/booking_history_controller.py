@@ -151,34 +151,41 @@ def booking_edit_summary():
         discount_result = cursor.fetchone()
 
         cursor.execute("""
-            SELECT 
-                ci.Name AS Customer_Name, 
-                ci.Customer_Id, 
-                cri.State, 
-                (%s * %s) AS Rental_Cost,
-                (
-                    (%s * %s) + 
-                    100 * COALESCE((
-                        SELECT 1 
-                        FROM Car_Theft sub_ct 
-                        WHERE cri.State = sub_ct.State 
-                        GROUP BY sub_ct.State
-                        HAVING AVG(sub_ct.Number_Thefts) > 250
-                    ), 0)
-                ) + (
-                    SELECT id.Insurance_Val 
-                    FROM Insurance_Detail id 
-                    WHERE id.Age = ci.Age
-                ) AS Total_Payment,
-                (
-                    SELECT id.Insurance_Val 
-                    FROM Insurance_Detail id 
-                    WHERE id.Age = ci.Age
-                ) AS Insurance_Val  
-            FROM Car_Rental_Info cri
-            JOIN Customer_Info ci ON cri.Car_Id = %s 
-            WHERE ci.Customer_Id = %s 
-        """, (discount_result[0], duration, discount_result[0], duration, car_id, customer_id))
+    select
+        ci.Name AS Customer_Name, 
+        ci.Customer_Id, 
+        cri.State, 
+        (%s * %s) AS Rental_Cost,
+        (100 * COALESCE((
+                select 1
+                from Car_Theft sub_ct 
+                where cri.State = sub_ct.State 
+                group by sub_ct.State
+                having AVG(sub_ct.Number_Thefts) > 250
+            ), 0)) as Theft_Insurance,
+        (
+            (%s * %s) + 
+            100 * COALESCE((
+                select 1
+                from Car_Theft sub_ct 
+                where cri.State = sub_ct.State 
+                group by sub_ct.State
+                having AVG(sub_ct.Number_Thefts) > 250
+            ), 0)
+        ) + (
+            SELECT id.Insurance_Val 
+            FROM Insurance_Detail id 
+            WHERE id.Age = ci.Age
+        ) AS Total_Payment,
+        (
+            SELECT id.Insurance_Val 
+            FROM Insurance_Detail id 
+            WHERE id.Age = ci.Age
+        ) AS Insurance_Val  
+    FROM Car_Rental_Info cri
+    JOIN Customer_Info ci ON cri.Car_Id = %s 
+    WHERE ci.Customer_Id = %s 
+""", (discount_result, duration, discount_result, duration, car_id, customer_id))
 
         total_result = cursor.fetchone()
         if not total_result:
@@ -197,18 +204,22 @@ def booking_edit_summary():
                 new_start,
                 new_end,
                 duration,
-                total_result[4],  
+                total_result[5],  
                 booking_id
             ))
 
         connection.commit()
 
         return jsonify({
-            "customer_name": total_result[0],
-            "customer_id": total_result[1],
-            "total_payment": float(total_result[4]),
-            "insurance_val": float(total_result[5]),
-            "discount_price": float(discount_result[0]) if discount_result else None
+        "customer_name": total_result[0],
+        "customer_id": total_result[1],
+        "total_payment": float(total_result[5]),
+        "insurance_val": float(total_result[6]),
+        "theft_insurance": float(total_result[4]),
+        "discount_price": float(discount_result[0]) if discount_result else None, 
+        "car_id": car_id,
+        "booking_id": booking_id if confirm else None,
+            
         }), 200
 
     except Exception as e:
