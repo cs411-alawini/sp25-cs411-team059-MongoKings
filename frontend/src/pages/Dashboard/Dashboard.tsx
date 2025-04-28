@@ -301,7 +301,7 @@ async function onDeleteReview(review: Review): Promise<void> {
             <Container>
               <Row className="mb-4">
                 <Col>
-                  <h2 className="text-center">Previous Bookings</h2>
+                  <h2 className="text-center">Booking History</h2>
                 </Col>
               </Row>
 
