@@ -103,7 +103,7 @@ BEGIN
             LEAVE read_loop;
         END IF;
 
-        IF avg_rating_val > 5 THEN
+        IF avg_rating_val >= 5 THEN
             SET rating_description_val = 'Perfect';
         ELSEIF avg_rating_val > 3 THEN
             SET rating_description_val = 'Good';
