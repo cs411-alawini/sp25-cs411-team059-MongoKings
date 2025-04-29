@@ -21,7 +21,7 @@
 | ----------- | ---------------------- |
 |  Title      |  Car Rental Service    |
 | System URL  |      link_to_system    |
-| Video Link  |      link_to_video     |
+| Video Link  |      https://www.dropbox.com/scl/fi/fi8ac36bkf77w88in7f7s/mk-demo-video.mp4?rlkey=yw9iot4tnf1e74nfjtkqso09b&e=1&dl=0   |
 
 ## Project Summary
 
